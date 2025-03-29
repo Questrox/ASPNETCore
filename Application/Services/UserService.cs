@@ -44,9 +44,6 @@ namespace Application.Services
 
             return new UserDTO(newUser);
         }
-
-
-
         public async Task<UserDTO?> UpdateUserAsync(UserDTO userDTO)
         {
             var existingUser = await _userRepository.GetUserByIdAsync(userDTO.Id);

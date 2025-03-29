@@ -19,6 +19,7 @@ namespace Application.DTOs
             ServicesPrice = reservation.ServicesPrice;
             RoomID = reservation.RoomID;
             UserID = reservation.UserID;
+            ReservationStatusID = reservation.ReservationStatusID;
         }
 
         public int ID { get; set; }
@@ -28,5 +29,6 @@ namespace Application.DTOs
         public decimal ServicesPrice { get; set; }
         public int RoomID { get; set; }
         public string UserID { get; set; }
+        public int ReservationStatusID { get; set; }
     }
 }
