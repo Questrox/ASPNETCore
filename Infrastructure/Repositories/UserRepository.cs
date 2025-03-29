@@ -31,11 +31,14 @@ namespace Infrastructure.Repositories
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
         }
-        public async Task UpdateUserAsync(User user)
+        public async Task<User> UpdateUserAsync(User user)
         {
-            _db.Entry(user).State = EntityState.Modified; 
+            _db.Entry(user).State = EntityState.Modified;
             await _db.SaveChangesAsync();
+
+            return await _db.Users.FindAsync(user.Id); // Загружаем обновленный объект из БД
         }
+
         public async Task DeleteUserAsync(string id)
         {
             var user = await _db.Users.Include(u => u.Reservation).FirstOrDefaultAsync(u => u.Id == id);

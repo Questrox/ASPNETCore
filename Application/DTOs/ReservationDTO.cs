@@ -16,6 +16,7 @@ namespace Application.DTOs
             ArrivalDate = reservation.ArrivalDate;
             DepartureDate = reservation.DepartureDate;
             FullPrice = reservation.FullPrice;
+            ServicesPrice = reservation.ServicesPrice;
             RoomID = reservation.RoomID;
             UserID = reservation.UserID;
         }
@@ -23,7 +24,8 @@ namespace Application.DTOs
         public int ID { get; set; }
         public DateTime ArrivalDate { get; set; }
         public DateTime DepartureDate { get; set; }
-        public double FullPrice { get; set; }
+        public decimal FullPrice { get; set; }
+        public decimal ServicesPrice { get; set; }
         public int RoomID { get; set; }
         public string UserID { get; set; }
     }

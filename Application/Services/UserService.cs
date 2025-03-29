@@ -31,28 +31,36 @@ namespace Application.Services
             return new UserDTO(user);
         }
 
-        public async Task AddUserAsync(UserDTO user)
+        public async Task<UserDTO> AddUserAsync(CreateUserDTO userCreateDTO)
         {
             var newUser = new User
             {
-                FullName = user.FullName,
-                Passport = user.Passport,
-                Discount = user.Discount,
+                FullName = userCreateDTO.FullName,
+                Passport = userCreateDTO.Passport,
+                Discount = userCreateDTO.Discount
             };
+
             await _userRepository.AddUserAsync(newUser);
+
+            return new UserDTO(newUser);
         }
 
-        public async Task UpdateUserAsync(UserDTO user)
+
+
+        public async Task<UserDTO?> UpdateUserAsync(UserDTO userDTO)
         {
-            var updUser = await _userRepository.GetUserByIdAsync(user.Id);
-            if (updUser != null)
-            {
-                updUser.FullName = user.FullName;
-                updUser.Passport = user.Passport;
-                updUser.Discount = user.Discount;
-                await _userRepository.UpdateUserAsync(updUser);
-            }
+            var existingUser = await _userRepository.GetUserByIdAsync(userDTO.Id);
+            if (existingUser == null) return null;
+
+            existingUser.FullName = userDTO.FullName;
+            existingUser.Passport = userDTO.Passport;
+            existingUser.Discount = userDTO.Discount;
+
+            await _userRepository.UpdateUserAsync(existingUser);
+
+            return new UserDTO(existingUser); // Возвращаем обновленный объект
         }
+
         public async Task DeleteUserAsync(string id)
         {
             await _userRepository.DeleteUserAsync(id);

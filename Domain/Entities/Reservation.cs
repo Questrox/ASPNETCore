@@ -24,12 +24,15 @@ namespace Domain.Entities
         [Column(TypeName = "date")]
         public DateTime DepartureDate { get; set; }
 
-        public double FullPrice { get; set; }
+        public decimal FullPrice { get; set; }
+        public decimal ServicesPrice { get; set; }
 
         public int RoomID { get; set; }
 
         public string UserID { get; set; }
-
+        public int ReservationStatusID { get; set; }
+        public virtual Room Room { get; set; }
         public virtual User User { get; set; }
+        public virtual ReservationStatus ReservationStatus { get; set; }
     }
 }

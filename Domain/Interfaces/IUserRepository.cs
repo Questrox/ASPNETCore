@@ -12,7 +12,7 @@ namespace Domain.Interfaces
         Task<User> GetUserByIdAsync(string id);
         Task<IEnumerable<User>> GetUsersAsync();
         Task AddUserAsync(User user);
-        Task UpdateUserAsync(User user);
+        Task<User> UpdateUserAsync(User user);
         Task DeleteUserAsync(string id);
     }
 }

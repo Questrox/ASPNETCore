@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class UserRole
+    public class Room
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public UserRole()
+        public Room()
         {
-            User = new HashSet<User>();
+            Reservation = new HashSet<Reservation>();
         }
-
         [Key]
         public int ID { get; set; }
 
-        [Required]
-        [StringLength(30)]
-        public string Name { get; set; }
+        public int Number { get; set; }
+
+        public int RoomTypeID { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<User> User { get; set; }
+        public virtual ICollection<Reservation> Reservation { get; set; }
+
+        public virtual RoomType RoomType { get; set; }
     }
 }

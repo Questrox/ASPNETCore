@@ -16,10 +16,17 @@ namespace Infrastructure.Data
         { }
 
         public virtual DbSet<Reservation> Reservations { get; set; }
+        public virtual DbSet<AdditionalService> AdditionalServices { get; set; }
+        public virtual DbSet<ReservationStatus> ReservationStatuses { get; set; }
+        public virtual DbSet<Room> Rooms { get; set; }
+        public virtual DbSet<RoomCategory> RoomCategories { get; set; }
+        public virtual DbSet<RoomType> RoomTypes { get; set; }
+        public virtual DbSet<ServiceStatus> ServiceStatuses { get; set; }
+        public virtual DbSet<ServiceString> ServiceStrings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); 
+            base.OnModelCreating(modelBuilder);
 
             // Настройка сущности User
             modelBuilder.Entity<User>()
@@ -35,7 +42,72 @@ namespace Infrastructure.Data
                 .WithOne(e => e.User)
                 .HasForeignKey(e => e.UserID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Настройка связи Room -> RoomType
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.RoomType)
+                .WithMany(rt => rt.Room)
+                .HasForeignKey(r => r.RoomTypeID)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Room>()
+                .Property(r => r.RoomTypeID)
+                .HasDefaultValue(1);
+            modelBuilder.Entity<RoomType>().HasData(new RoomType { ID = 1, GuestCapacity = 1, Price = 1000, Description = ""});
+
+            // Настройка связи RoomType -> RoomCategory
+            modelBuilder.Entity<RoomType>()
+                .HasOne(rt => rt.RoomCategory)
+                .WithMany(rc => rc.RoomType)
+                .HasForeignKey(rt => rt.RoomCategoryID)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<RoomType>()
+                .Property(r => r.RoomCategoryID)
+                .HasDefaultValue(1);
+            modelBuilder.Entity<RoomCategory>().HasData(new RoomCategory { ID = 1, Category = "Стандарт" });
+
+            // Настройка связи Reservation -> Room
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.Room)
+                .WithMany(rm => rm.Reservation)
+                .HasForeignKey(r => r.RoomID)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.RoomID)
+                .HasDefaultValue(1);
+            modelBuilder.Entity<Room>().HasData(new Room { ID = 1, Number = 101 });
+
+            // Настройка связи Reservation -> ReservationStatus
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.ReservationStatus)
+                .WithMany(rs => rs.Reservation)
+                .HasForeignKey(r => r.ReservationStatusID)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.ReservationStatusID)
+                .HasDefaultValue(1);
+
+            modelBuilder.Entity<ReservationStatus>().HasData(new ReservationStatus { ID = 1, Status = "Ожидание" });
+
+            // Настройка связи ServiceString -> AdditionalService
+            modelBuilder.Entity<ServiceString>()
+                .HasOne(ss => ss.AdditionalService)
+                .WithMany(asv => asv.ServiceString)
+                .HasForeignKey(ss => ss.AdditionalServiceID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Настройка связи ServiceString -> Reservation
+            modelBuilder.Entity<ServiceString>()
+                .HasOne(ss => ss.Reservation)
+                .WithMany()
+                .HasForeignKey(ss => ss.ReservationID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Настройка связи ServiceString -> ServiceStatus
+            modelBuilder.Entity<ServiceString>()
+                .HasOne(ss => ss.ServiceStatus)
+                .WithMany(sss => sss.ServiceString)
+                .HasForeignKey(ss => ss.ServiceStatusID)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
-
 }

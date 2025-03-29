@@ -36,23 +36,31 @@ namespace WebAPI.Controllers
 
         // POST api/<UserController>
         [HttpPost]
-        public async Task<ActionResult<UserDTO>> CreateUser(UserDTO userDTO)
+        public async Task<ActionResult<UserDTO>> CreateUser(CreateUserDTO userCreateDTO)
         {
-            await _userService.AddUserAsync(userDTO);
+            var userDTO = await _userService.AddUserAsync(userCreateDTO);
             return CreatedAtAction(nameof(GetUser), new { id = userDTO.Id }, userDTO);
         }
 
+
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(string id, UserDTO userDTO)
+        public async Task<ActionResult<UserDTO>> UpdateUser(string id, UserDTO userDTO)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             if (id != userDTO.Id) return BadRequest();
-            await _userService.UpdateUserAsync(userDTO);
-            return NoContent();
+
+            var updatedUser = await _userService.UpdateUserAsync(userDTO);
+
+            if (updatedUser == null)
+                return NotFound();
+
+            return Ok(updatedUser);
         }
 
+
         // DELETE api/<UserController>/5
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
