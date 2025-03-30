@@ -52,7 +52,6 @@ namespace Infrastructure.Data
             modelBuilder.Entity<Room>()
                 .Property(r => r.RoomTypeID)
                 .HasDefaultValue(1);
-            modelBuilder.Entity<RoomType>().HasData(new RoomType { ID = 1, GuestCapacity = 1, Price = 1000, Description = ""});
 
             // Настройка связи RoomType -> RoomCategory
             modelBuilder.Entity<RoomType>()
@@ -63,7 +62,6 @@ namespace Infrastructure.Data
             modelBuilder.Entity<RoomType>()
                 .Property(r => r.RoomCategoryID)
                 .HasDefaultValue(1);
-            modelBuilder.Entity<RoomCategory>().HasData(new RoomCategory { ID = 1, Category = "Стандарт" });
 
             // Настройка связи Reservation -> Room
             modelBuilder.Entity<Reservation>()
@@ -74,7 +72,6 @@ namespace Infrastructure.Data
             modelBuilder.Entity<Reservation>()
                 .Property(r => r.RoomID)
                 .HasDefaultValue(1);
-            modelBuilder.Entity<Room>().HasData(new Room { ID = 1, Number = 101 });
 
             // Настройка связи Reservation -> ReservationStatus
             modelBuilder.Entity<Reservation>()
@@ -85,8 +82,6 @@ namespace Infrastructure.Data
             modelBuilder.Entity<Reservation>()
                 .Property(r => r.ReservationStatusID)
                 .HasDefaultValue(1);
-
-            modelBuilder.Entity<ReservationStatus>().HasData(new ReservationStatus { ID = 1, Status = "Ожидание" });
 
             // Настройка связи ServiceString -> AdditionalService
             modelBuilder.Entity<ServiceString>()
