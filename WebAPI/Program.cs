@@ -46,9 +46,22 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireRoleUser", policy => policy.RequireRole("User"));
 });
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+//Регистрация зависимостей
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<UserService>();
+
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<ReservationService>();
+
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<RoomService>();
+
+builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+builder.Services.AddScoped<RoomTypeService>();
+
+builder.Services.AddScoped<IServiceStringRepository, ServiceStringRepository>();
+builder.Services.AddScoped<ServiceStringService>();
 
 
 builder.Services.AddControllers();
@@ -79,6 +92,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 // Вызов инициализации предопределенных данных
 using (var scope = app.Services.CreateScope())
