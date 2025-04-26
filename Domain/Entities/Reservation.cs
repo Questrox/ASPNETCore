@@ -25,6 +25,7 @@ namespace Domain.Entities
         public DateTime DepartureDate { get; set; }
 
         public decimal FullPrice { get; set; }
+        public decimal LivingPrice { get; set; }
         public decimal ServicesPrice { get; set; }
 
         public int RoomID { get; set; }

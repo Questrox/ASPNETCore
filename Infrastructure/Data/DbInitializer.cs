@@ -26,23 +26,27 @@ namespace Infrastructure.Data
             // Проверяем наличие пользователей
             if (!userManager.Users.Any())
             {
-                await userManager.CreateAsync(new User
+                var admin = new User
                 {
                     UserName = "admin",
                     Email = "admin@example.com",
                     FullName = "Морозов Алексей Алексеевич",
                     Passport = "1234567890",
                     Discount = 10
-                }, "Admin@123");
+                };
+                await userManager.CreateAsync(admin, "Admin@123");
+                await userManager.AddToRoleAsync(admin, "admin");
 
-                await userManager.CreateAsync(new User
+                var user = new User
                 {
                     UserName = "user",
                     Email = "user@example.com",
                     FullName = "Иванов Иван Иванович",
                     Passport = "0987654321",
                     Discount = 5
-                }, "User@123");
+                };
+                await userManager.CreateAsync(user, "User@123");
+                await userManager.AddToRoleAsync(user, "user");
             }
             #endregion
 
@@ -299,6 +303,7 @@ namespace Infrastructure.Data
                         ArrivalDate = DateTime.Now,
                         DepartureDate = DateTime.Now.AddDays(7),
                         FullPrice = 50000,
+                        LivingPrice = 50000,
                         ServicesPrice = 0,
                         RoomID = 1,
                         UserID = adminUser.Id,
@@ -309,6 +314,7 @@ namespace Infrastructure.Data
                         ArrivalDate = DateTime.Now.AddDays(10),
                         DepartureDate = DateTime.Now.AddDays(15),
                         FullPrice = 25000,
+                        LivingPrice = 25000,
                         ServicesPrice = 0,
                         RoomID = 1,
                         UserID = normalUser.Id,
@@ -321,6 +327,5 @@ namespace Infrastructure.Data
             }
             #endregion
         }
-
     }
 }

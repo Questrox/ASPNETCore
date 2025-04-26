@@ -63,6 +63,9 @@ builder.Services.AddScoped<RoomTypeService>();
 builder.Services.AddScoped<IServiceStringRepository, ServiceStringRepository>();
 builder.Services.AddScoped<ServiceStringService>();
 
+builder.Services.AddScoped<IDictionariesRepository, DictionariesRepository>();
+builder.Services.AddScoped<DictionariesService>();
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

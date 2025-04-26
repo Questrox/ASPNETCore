@@ -31,6 +31,7 @@ namespace Application.DTOs
         public DateTime DepartureDate { get; set; }
         public decimal FullPrice { get; set; }
         public decimal ServicesPrice { get; set; }
+        public decimal LivingPrice { get; set; }
         public int RoomID { get; set; }
         public string UserID { get; set; }
         public int ReservationStatusID { get; set; }

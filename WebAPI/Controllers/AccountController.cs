@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -49,7 +50,9 @@ namespace WebAPI.Controllers
             {
                 var user = await _userManager.FindByNameAsync(model.UserName);
                 var token = GenerateJwtToken(user);
-                return Ok(new { Token = token });
+                IList<string> roles = await _userManager.GetRolesAsync(user);
+                string userRole = roles.FirstOrDefault();
+                return Ok(new { token, userName = user.UserName, userRole });
             }
             return Unauthorized();
         }
