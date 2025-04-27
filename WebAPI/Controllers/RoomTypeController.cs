@@ -34,8 +34,11 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<RoomTypeDTO>> CreateRoomType(CreateRoomTypeDTO createRoomTypeDTO)
         {
-            var roomTypeDTO = await _roomTypeService.AddRoomTypeAsync(createRoomTypeDTO);
-            return CreatedAtAction(nameof(GetRoomType), new { id = roomTypeDTO.ID }, roomTypeDTO);
+            var created = await _roomTypeService.AddRoomTypeAsync(createRoomTypeDTO);
+            var fullDto = await _roomTypeService.GetRoomTypeByIdAsync(created.ID); //Чтобы вернулся вместе со связанными объектами
+            if (fullDto == null)
+                return NotFound();
+            return CreatedAtAction(nameof(GetRoomType), new { id = fullDto.ID }, fullDto);
         }
 
         [HttpPut("{id}")]

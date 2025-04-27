@@ -20,11 +20,11 @@ namespace Infrastructure.Repositories
 
         public async Task<Room> GetRoomByIdAsync(int id)
         {
-            return await _db.Rooms.Include(r => r.Reservation).Include(r => r.RoomType).FirstOrDefaultAsync(r => r.ID == id);
+            return await _db.Rooms.Include(r => r.Reservation).Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory).FirstOrDefaultAsync(r => r.ID == id);
         }
         public async Task<IEnumerable<Room>> GetRoomsAsync()
         {
-            return await _db.Rooms.Include(u => u.Reservation).Include(r => r.RoomType).ToListAsync();
+            return await _db.Rooms.Include(u => u.Reservation).Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory).ToListAsync();
         }
         public async Task AddRoomAsync(Room room)
         {
@@ -36,7 +36,8 @@ namespace Infrastructure.Repositories
             _db.Entry(room).State = EntityState.Modified;
             await _db.SaveChangesAsync();
 
-            return await _db.Rooms.FindAsync(room.ID); // Загружаем обновленный объект из БД
+            return await _db.Rooms.Include(r => r.Reservation).Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory)
+                .FirstOrDefaultAsync(r => r.ID == room.ID); // Загружаем обновленный объект из БД
         }
 
         public async Task DeleteRoomAsync(int id)

@@ -36,7 +36,8 @@ namespace Infrastructure.Repositories
             _db.Entry(rt).State = EntityState.Modified;
             await _db.SaveChangesAsync();
 
-            return await _db.RoomTypes.FindAsync(rt.ID); // Загружаем обновленный объект из БД
+            return await _db.RoomTypes.Include(r => r.Room).Include(r => r.RoomCategory)
+                .FirstOrDefaultAsync(r => r.ID == rt.ID); // Загружаем обновленный объект из БД
         }
 
         public async Task DeleteRoomTypeAsync(int id)
