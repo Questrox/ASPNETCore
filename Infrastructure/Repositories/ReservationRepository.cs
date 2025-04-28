@@ -18,14 +18,20 @@ namespace Infrastructure.Repositories
             _db = db;
         }
 
+        public async Task<IEnumerable<Reservation>> GetReservationsForUserAsync(string userID)
+        {
+            return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
+                .Include(r => r.ReservationStatus).Include(r => r.User).Where(r => r.UserID == userID).ToListAsync();
+        }
         public async Task<Reservation> GetReservationByIdAsync(int id)
         {
-            return await _db.Reservations.Include(r => r.User).Include(r => r.Room).Include(r => r.ReservationStatus)
-                .FirstOrDefaultAsync(r => r.ID == id);
+            return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
+                .Include(r => r.ReservationStatus).Include(r => r.User).FirstOrDefaultAsync(r => r.ID == id);
         }
         public async Task<IEnumerable<Reservation>> GetReservationsAsync()
         {
-            return await _db.Reservations.Include(r => r.User).Include(r => r.Room).Include(r => r.ReservationStatus)
+            return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
+                .Include(r => r.ReservationStatus).Include(r => r.User)
                 .ToListAsync();
         }
         public async Task AddReservationAsync(Reservation res)
@@ -38,7 +44,9 @@ namespace Infrastructure.Repositories
             _db.Entry(res).State = EntityState.Modified;
             await _db.SaveChangesAsync();
 
-            return await _db.Reservations.FindAsync(res.ID); // Загружаем обновленный объект из БД
+            return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
+                .Include(r => r.ReservationStatus).Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.ID == res.ID); // Загружаем обновленный объект из БД
         }
 
         public async Task DeleteReservationAsync(int id)

@@ -18,6 +18,11 @@ namespace Application.Services
             _resRepository = resRepository;
         }
 
+        public async Task<IEnumerable<ReservationDTO>> GetReservationsForUser(string userId)
+        {
+            var reservs = await _resRepository.GetReservationsForUserAsync(userId);
+            return reservs.Select(x => new ReservationDTO(x));
+        }
         public async Task<IEnumerable<ReservationDTO>> GetReservationsAsync()
         {
             var reservs = await _resRepository.GetReservationsAsync();
