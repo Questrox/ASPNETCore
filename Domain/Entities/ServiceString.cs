@@ -13,6 +13,7 @@ namespace Domain.Entities
         public int ID { get; set; }
 
         public int Count { get; set; }
+        public int DeliveredCount { get; set; }
 
         public int AdditionalServiceID { get; set; }
 

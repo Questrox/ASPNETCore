@@ -37,7 +37,6 @@ namespace Application.Services
             {
                 FullName = userCreateDTO.FullName,
                 Passport = userCreateDTO.Passport,
-                Discount = userCreateDTO.Discount
             };
 
             await _userRepository.AddUserAsync(newUser);
@@ -51,7 +50,6 @@ namespace Application.Services
 
             existingUser.FullName = userDTO.FullName;
             existingUser.Passport = userDTO.Passport;
-            existingUser.Discount = userDTO.Discount;
 
             await _userRepository.UpdateUserAsync(existingUser);
 

@@ -59,10 +59,10 @@ namespace Application.Services
             //Расчет цен
             decimal livingPrice = rt.Price * totalDays;
             decimal servicesPrice = 0;
-            for (int i = 0; i < createReservationDTO.Services.Count; i++)
-            {
-                servicesPrice += createReservationDTO.Services[i].Price * createReservationDTO.Services[i].Count;
-            }
+            //for (int i = 0; i < createReservationDTO.Services.Count; i++)
+            //{
+            //    servicesPrice += createReservationDTO.Services[i].Price * createReservationDTO.Services[i].Count;
+            //}
             decimal fullPrice = livingPrice + servicesPrice;
 
             //Добавление бронирования в БД
@@ -86,6 +86,7 @@ namespace Application.Services
                 ServiceString servStr = new ServiceString
                 {
                     Count = createReservationDTO.Services[i].Count,
+                    DeliveredCount = 0,
                     AdditionalServiceID = createReservationDTO.Services[i].AdditionalServiceID,
                     Price = createReservationDTO.Services[i].Price,
                     ServiceStatusID = 1,

@@ -22,7 +22,6 @@ namespace Domain.Entities
         [StringLength(20)]
         public string Passport { get; set; }
 
-        public int Discount { get; set; }
         [JsonIgnore]
         public virtual ICollection<Reservation> Reservation { get; set; }
 

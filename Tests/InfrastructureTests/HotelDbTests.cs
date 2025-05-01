@@ -24,7 +24,7 @@ namespace Tests.InfrastructureTests
         {
             using (var context = new HotelDb(_options))
             {
-                var project = new User { FullName = "TestName", Passport = "1234567890", Discount = 50 };
+                var project = new User { FullName = "TestName", Passport = "1234567890" };
                 context.Users.Add(project);
                 await context.SaveChangesAsync();
             }

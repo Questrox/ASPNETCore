@@ -26,6 +26,7 @@ namespace Application.DTOs
         {
             ID = s.ID;
             Count = s.Count;
+            DeliveredCount = s.DeliveredCount;
             AdditionalServiceID = s.AdditionalServiceID;
             ReservationID = s.ReservationID;
             Price = s.Price;
@@ -38,6 +39,7 @@ namespace Application.DTOs
 
         public int Count { get; set; }
 
+        public int DeliveredCount { get; set; }
         public int AdditionalServiceID { get; set; }
 
         public int ReservationID { get; set; }

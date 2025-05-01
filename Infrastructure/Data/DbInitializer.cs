@@ -31,8 +31,7 @@ namespace Infrastructure.Data
                     UserName = "admin",
                     Email = "admin@example.com",
                     FullName = "Морозов Алексей Алексеевич",
-                    Passport = "1234567890",
-                    Discount = 10
+                    Passport = "1234567890"
                 };
                 await userManager.CreateAsync(admin, "Admin@123");
                 await userManager.AddToRoleAsync(admin, "admin");
@@ -42,8 +41,7 @@ namespace Infrastructure.Data
                     UserName = "user",
                     Email = "user@example.com",
                     FullName = "Иванов Иван Иванович",
-                    Passport = "0987654321",
-                    Discount = 5
+                    Passport = "0987654321"
                 };
                 await userManager.CreateAsync(user, "User@123");
                 await userManager.AddToRoleAsync(user, "user");
@@ -227,16 +225,11 @@ namespace Infrastructure.Data
                     new ServiceStatus
                     {
                         ID = 2,
-                        Status = "Оказана"
-                    },
-                    new ServiceStatus
-                    {
-                        ID = 3,
                         Status = "Оплачена"
                     },
                     new ServiceStatus
                     {
-                        ID = 4,
+                        ID = 3,
                         Status = "Отменена"
                     }
                 };

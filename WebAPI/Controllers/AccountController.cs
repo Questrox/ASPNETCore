@@ -30,7 +30,7 @@ namespace WebAPI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             //var user = new User { UserName = model.UserName, Email = model.Email };
-            var user = new User { UserName = model.UserName, FullName = model.FullName, Passport = model.Passport, Discount = 0 };
+            var user = new User { UserName = model.UserName, FullName = model.FullName, Passport = model.Passport};
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {

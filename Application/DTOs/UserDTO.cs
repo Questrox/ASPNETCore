@@ -16,7 +16,6 @@ namespace Application.DTOs
             Id = u.Id;
             FullName = u.FullName;
             Passport = u.Passport;
-            Discount = u.Discount;
             Reservation = u.Reservation?.Select(r => new ReservationDTO(r)).ToList();
         }
 
@@ -25,7 +24,6 @@ namespace Application.DTOs
             Id = u.Id;
             FullName = u.FullName;
             Passport = u.Passport;
-            Discount = u.Discount;
             u.Reservation = Reservation;
         }
 
@@ -35,7 +33,6 @@ namespace Application.DTOs
 
         public string Passport { get; set; }
 
-        public int Discount { get; set; }
         public ICollection<ReservationDTO>? Reservation { get; set; }
 
     }

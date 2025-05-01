@@ -27,9 +27,9 @@ namespace Tests.ApplicationTests
             // Arrange
             var users = new List<User>
             {
-                new User { FullName = "User1", Passport = "1234567890", Discount = 50 },
-                new User { FullName = "User2", Passport = "0987654321", Discount = 10 },
-                new User { FullName = "User3", Passport = "1112223334", Discount = 0}
+                new User { FullName = "User1", Passport = "1234567890" },
+                new User { FullName = "User2", Passport = "0987654321" },
+                new User { FullName = "User3", Passport = "1112223334"}
             };
 
             _mockUserRepository.Setup(repo => repo.GetUsersAsync()).ReturnsAsync(users);
@@ -39,7 +39,6 @@ namespace Tests.ApplicationTests
 
             // Assert
             Assert.Equal(3, result.Count());
-            Assert.Equal(50, result.First().Discount);
         }
     }
 }

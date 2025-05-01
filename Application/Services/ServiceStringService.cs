@@ -37,6 +37,7 @@ namespace Application.Services
             var s = new ServiceString
             {
                 Count = createServiceStringDTO.Count,
+                DeliveredCount = 0,
                 AdditionalServiceID = createServiceStringDTO.AdditionalServiceID,
                 ReservationID = createServiceStringDTO.ReservationID,
                 Price = createServiceStringDTO.Price,
@@ -53,6 +54,7 @@ namespace Application.Services
             if (existingString == null) return null;
 
             existingString.Count = s.Count;
+            existingString.DeliveredCount = s.DeliveredCount;
             existingString.AdditionalServiceID = s.AdditionalServiceID;
             existingString.ReservationID = s.ReservationID;
             existingString.Price = s.Price;
