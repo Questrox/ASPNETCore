@@ -3,6 +3,7 @@ using Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using WebAPI.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,7 +18,22 @@ namespace WebAPI.Controllers
         {
             _resService = resService;
         }
-        // GET: api/<ReservationController>
+
+        [HttpPost("calculatePrice")]
+        public async Task<ActionResult<decimal>> CalculatePrice([FromBody] CalculatePriceModel req)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            decimal price = await _resService.CalculatePriceAsync(
+                req.ArrivalDate,
+                req.DepartureDate,
+                req.RoomTypeID,
+                req.Services);
+
+            return Ok(price);
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservations()
         {
@@ -45,10 +61,23 @@ namespace WebAPI.Controllers
 
         // POST api/<ReservationController>
         [HttpPost]
-        public async Task<ActionResult<ReservationDTO>> CreateReservation(CreateReservationDTO createReservationDTO)
+        [Authorize]
+        public async Task<ActionResult<ReservationDTO>> CreateReservation([FromBody] CreateReservationDTO createReservationDTO)
         {
-            var resDTO = await _resService.AddReservationAsync(createReservationDTO);
-            return CreatedAtAction(nameof(GetReservation), new { id = resDTO.ID }, resDTO);
+            try
+            {
+                createReservationDTO.UserID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var resDTO = await _resService.AddReservationAsync(createReservationDTO);
+                return CreatedAtAction(nameof(GetReservation), new { id = resDTO.ID }, resDTO);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
+            }
         }
 
         // PUT api/<ReservationController>/5

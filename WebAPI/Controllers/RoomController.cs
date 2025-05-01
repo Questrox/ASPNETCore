@@ -22,6 +22,12 @@ namespace WebAPI.Controllers
             var rooms = await _roomService.GetRoomsAsync();
             return Ok(rooms);
         }
+        [HttpGet("available")]
+        public async Task<ActionResult<IEnumerable<RoomDTO>>> GetAvailableRooms(DateTime arrivalDate, DateTime departureDate, int roomTypeID)
+        {
+            var rooms = await _roomService.GetAvailableRoomsAsync(arrivalDate, departureDate, roomTypeID);
+            return Ok(rooms);
+        }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<RoomDTO>> GetRoom(int id)

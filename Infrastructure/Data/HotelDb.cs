@@ -93,9 +93,10 @@ namespace Infrastructure.Data
             // Настройка связи ServiceString -> Reservation
             modelBuilder.Entity<ServiceString>()
                 .HasOne(ss => ss.Reservation)
-                .WithMany()
+                .WithMany(r => r.ServiceStrings)
                 .HasForeignKey(ss => ss.ReservationID)
                 .OnDelete(DeleteBehavior.Cascade);
+
 
             // Настройка связи ServiceString -> ServiceStatus
             modelBuilder.Entity<ServiceString>()

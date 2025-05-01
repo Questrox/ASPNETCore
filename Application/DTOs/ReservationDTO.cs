@@ -18,12 +18,14 @@ namespace Application.DTOs
             DepartureDate = reservation.DepartureDate;
             FullPrice = reservation.FullPrice;
             ServicesPrice = reservation.ServicesPrice;
+            LivingPrice = reservation.LivingPrice;
             RoomID = reservation.RoomID;
             UserID = reservation.UserID;
             ReservationStatusID = reservation.ReservationStatusID;
             Room = reservation.Room;
             User = reservation.User;
             ReservationStatus = reservation.ReservationStatus;
+            ServiceStrings = reservation.ServiceStrings;
         }
 
         public int ID { get; set; }
@@ -38,5 +40,6 @@ namespace Application.DTOs
         public virtual Room Room { get; set; }
         public virtual User User { get; set; }
         public virtual ReservationStatus ReservationStatus { get; set; }
+        public virtual ICollection<ServiceString> ServiceStrings { get; set; }
     }
 }

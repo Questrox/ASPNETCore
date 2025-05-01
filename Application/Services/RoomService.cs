@@ -31,6 +31,11 @@ namespace Application.Services
             if (room == null) return null;
             return new RoomDTO(room);
         }
+        public async Task<IEnumerable<RoomDTO>> GetAvailableRoomsAsync(DateTime arrivalDate, DateTime departureDate, int roomTypeID)
+        {
+            var rooms = await _roomRepository.GetAvailableRoomsAsync(arrivalDate, departureDate, roomTypeID);
+            return rooms.Select(x => new RoomDTO(x));
+        }
 
         public async Task<RoomDTO> AddRoomAsync(CreateRoomDTO createRoomDTO)
         {

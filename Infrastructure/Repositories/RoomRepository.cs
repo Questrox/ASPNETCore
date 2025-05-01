@@ -26,6 +26,15 @@ namespace Infrastructure.Repositories
         {
             return await _db.Rooms.Include(u => u.Reservation).Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory).ToListAsync();
         }
+        public async Task<IEnumerable<Room>> GetAvailableRoomsAsync(DateTime arrivalDate, DateTime departureDate, int roomTypeID)
+        {
+            return await _db.Rooms.Include(u => u.Reservation).Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory)
+            .Where(room => room.RoomTypeID == roomTypeID).Where(room => !_db.Reservations.Any(reservation =>
+                reservation.RoomID == room.ID &&
+                reservation.ReservationStatusID != 4 &&
+                !(reservation.DepartureDate <= arrivalDate || reservation.ArrivalDate >= departureDate))) // Проверяем пересечение периодов
+            .ToListAsync();
+        }
         public async Task AddRoomAsync(Room room)
         {
             _db.Rooms.Add(room);

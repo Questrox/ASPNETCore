@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Models;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,17 +22,23 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Reservation>> GetReservationsForUserAsync(string userID)
         {
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
-                .Include(r => r.ReservationStatus).Include(r => r.User).Where(r => r.UserID == userID).ToListAsync();
+                .Include(r => r.ReservationStatus).Include(r => r.User)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
+                .Where(r => r.UserID == userID)
+                .OrderByDescending(r => r.ArrivalDate).ToListAsync();
         }
         public async Task<Reservation> GetReservationByIdAsync(int id)
         {
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
-                .Include(r => r.ReservationStatus).Include(r => r.User).FirstOrDefaultAsync(r => r.ID == id);
+                .Include(r => r.ReservationStatus).Include(r => r.User)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
+                .FirstOrDefaultAsync(r => r.ID == id);
         }
         public async Task<IEnumerable<Reservation>> GetReservationsAsync()
         {
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
                 .Include(r => r.ReservationStatus).Include(r => r.User)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
                 .ToListAsync();
         }
         public async Task AddReservationAsync(Reservation res)
@@ -46,6 +53,7 @@ namespace Infrastructure.Repositories
 
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
                 .Include(r => r.ReservationStatus).Include(r => r.User)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
                 .FirstOrDefaultAsync(r => r.ID == res.ID); // Загружаем обновленный объект из БД
         }
 

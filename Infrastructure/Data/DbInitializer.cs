@@ -232,6 +232,11 @@ namespace Infrastructure.Data
                     new ServiceStatus
                     {
                         ID = 3,
+                        Status = "Оплачена"
+                    },
+                    new ServiceStatus
+                    {
+                        ID = 4,
                         Status = "Отменена"
                     }
                 };
