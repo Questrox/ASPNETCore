@@ -29,6 +29,11 @@ namespace Infrastructure.Repositories
             return await _db.ServiceStrings.Include(s => s.AdditionalService).Include(s => s.ServiceStatus)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<ServiceString>> GetServiceStringsForReservationAsync(int resID)
+        {
+            return await _db.ServiceStrings.Include(s => s.AdditionalService).Include(s => s.ServiceStatus)
+                .Where(s => s.ReservationID == resID).ToListAsync();
+        }
         public async Task AddServiceStringAsync(ServiceString servStr)
         {
             _db.ServiceStrings.Add(servStr);

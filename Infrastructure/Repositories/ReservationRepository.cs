@@ -18,7 +18,15 @@ namespace Infrastructure.Repositories
         {
             _db = db;
         }
-
+        public async Task<IEnumerable<Reservation>> GetReservationsByPassportAsync(string passport)
+        {
+            return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
+                .Include(r => r.ReservationStatus).Include(r => r.User)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.AdditionalService)
+                .Where(r => r.User.Passport == passport)
+                .OrderByDescending(r => r.ArrivalDate).ToListAsync();
+        }
         public async Task<IEnumerable<Reservation>> GetReservationsForUserAsync(string userID)
         {
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)

@@ -26,7 +26,38 @@ namespace Application.Services
             _serviceStringRepository = serviceStringRepository;
         }
 
-        public async Task<IEnumerable<ReservationDTO>> GetReservationsForUser(string userId)
+        public async Task<ReservationDTO> ConfirmPayment(ReservationDTO resDTO)
+        {
+            //Проверки
+            if (resDTO.ReservationStatusID == 1)
+                throw new ArgumentException("Попытка подтвердить оплату услуг у бронирования, у которого еще не оплачено ожидание");
+            if (resDTO.ReservationStatusID == 3)
+                throw new ArgumentException("Попытка подтвердить оплату услуг у уже оплаченного бронирования");
+            if (resDTO.ReservationStatusID == 4)
+                throw new ArgumentException("Попытка подтвердить оплату услуг у отмененного бронирования");
+            
+            //Меняем статусы услуг
+            var res = await _resRepository.GetReservationByIdAsync(resDTO.ID);
+            var services = await _serviceStringRepository.GetServiceStringsForReservationAsync(resDTO.ID);
+
+            foreach (var service in services.Where(s => s.ServiceStatusID == 1))
+            {
+                service.ServiceStatusID = 2;
+                await _serviceStringRepository.UpdateServiceStringAsync(service);
+            }
+
+            //Обновляем статус бронирования
+            res.ReservationStatusID = 3;
+            await _resRepository.UpdateReservationAsync(res);
+
+            return new ReservationDTO(res);
+        }
+        public async Task<IEnumerable<ReservationDTO>> GetReservationsByPassportAsync(string passport)
+        {
+            var reservs = await _resRepository.GetReservationsByPassportAsync(passport);
+            return reservs.Select(x => new ReservationDTO(x));
+        }
+        public async Task<IEnumerable<ReservationDTO>> GetReservationsForUserAsync(string userId)
         {
             var reservs = await _resRepository.GetReservationsForUserAsync(userId);
             return reservs.Select(x => new ReservationDTO(x));
@@ -79,22 +110,22 @@ namespace Application.Services
             };
 
             await _resRepository.AddReservationAsync(newRes);
-
+            var services = createReservationDTO.Services ?? new List<SelectedServiceItem>();
             //Добавление строк доп.услуг в БД
-            for (int i = 0; i < createReservationDTO.Services.Count; i++)
+            for (int i = 0; i < services.Count; i++)
             {
                 ServiceString servStr = new ServiceString
                 {
-                    Count = createReservationDTO.Services[i].Count,
+                    Count = services[i].Count,
                     DeliveredCount = 0,
-                    AdditionalServiceID = createReservationDTO.Services[i].AdditionalServiceID,
-                    Price = createReservationDTO.Services[i].Price,
+                    AdditionalServiceID = services[i].AdditionalServiceID,
+                    Price = services[i].Price,
                     ServiceStatusID = 1,
                     ReservationID = newRes.ID
                 };
                 await _serviceStringRepository.AddServiceStringAsync(servStr);
             }
-
+            newRes = await _resRepository.GetReservationByIdAsync(newRes.ID);
             return new ReservationDTO(newRes);
         }
         public async Task<ReservationDTO?> UpdateReservationAsync(ReservationDTO resDTO)

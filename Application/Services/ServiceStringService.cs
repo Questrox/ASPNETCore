@@ -13,12 +13,49 @@ namespace Application.Services
     public class ServiceStringService
     {
         private readonly IServiceStringRepository _serviceStringRepository;
+        private readonly IReservationRepository _reservationRepository;
         private readonly IAdditionalServiceRepository _additionalServiceRepository;
 
-        public ServiceStringService(IServiceStringRepository serviceStringRepository, IAdditionalServiceRepository additionalServiceRepository)
+        public ServiceStringService(IServiceStringRepository serviceStringRepository, IAdditionalServiceRepository additionalServiceRepository,
+            IReservationRepository reservationRepository)
         {
             _serviceStringRepository = serviceStringRepository;
             _additionalServiceRepository = additionalServiceRepository;
+            _reservationRepository = reservationRepository;
+        }
+
+        public async Task<ServiceStringDTO> DeliverServiceAsync(int serviceStringID, int amount)
+        {
+            var servStr = await _serviceStringRepository.GetServiceStringByIdAsync(serviceStringID);
+            var res = await _reservationRepository.GetReservationByIdAsync(servStr.ReservationID);
+            var service = await _additionalServiceRepository.GetAdditionalServiceByIdAsync(servStr.AdditionalServiceID);
+            //Проверки
+            if (servStr == null) 
+                throw new ArgumentException("Не существует строки услуг с идентификатором " + serviceStringID);
+            if (servStr.Count - servStr.DeliveredCount < amount)
+                throw new ArgumentException("Попытка оказать больше услуг, чем было забронировано");
+            if (servStr.ServiceStatusID == 2)
+                throw new ArgumentException("Попытка оказать уже оказанную (оплаченную) услугу");
+            if (servStr.ServiceStatusID == 3)
+                throw new ArgumentException("Попытка оказать отмененную услугу");
+            if (res.ReservationStatusID == 1)
+                throw new ArgumentException("Попытка оказать услугу гостю, который еще не заехал");
+            if (res.ReservationStatusID == 3)
+                throw new ArgumentException("Попытка оказать услугу гостю, который уже выехал");
+            if (res.ReservationStatusID == 4)
+                throw new ArgumentException("Попытка оказать услугу в отмененном бронировании");
+
+            //Обновляем столбец количества оказанных услуг
+            servStr.DeliveredCount += amount;
+            await _serviceStringRepository.UpdateServiceStringAsync(servStr);
+
+            //Обновляем цену бронирования (и за услуги, и полную)
+            res.ServicesPrice += service.Price * amount;
+            res.FullPrice += service.Price * amount;
+            await _reservationRepository.UpdateReservationAsync(res);
+
+            var result = await _serviceStringRepository.GetServiceStringByIdAsync(serviceStringID);
+            return new ServiceStringDTO(result);
         }
 
         public async Task<IEnumerable<ServiceStringDTO>> GetServiceStringsAsync()

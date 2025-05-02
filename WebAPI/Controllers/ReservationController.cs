@@ -18,7 +18,7 @@ namespace WebAPI.Controllers
         {
             _resService = resService;
         }
-
+        
         [HttpPost("calculatePrice")]
         public async Task<ActionResult<decimal>> CalculatePrice([FromBody] CalculatePriceModel req)
         {
@@ -33,20 +33,44 @@ namespace WebAPI.Controllers
 
             return Ok(price);
         }
+        [Authorize(Roles = "admin")]
+        [HttpPut("confirmPayment")]
+        public async Task<ActionResult<ReservationDTO>> ConfirmPayment(ReservationDTO resDTO)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            try
+            {
+                return await _resService.ConfirmPayment(resDTO);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
+            }
+        }
+        [Authorize(Roles = "admin")]
+        [HttpGet("passportReservations")]
+        public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservationsByPassport(string passport)
+        {
+            var reservs = await _resService.GetReservationsByPassportAsync(passport);
+            return Ok(reservs);
+        }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservations()
         {
             var reservs = await _resService.GetReservationsAsync();
             return Ok(reservs);
         }
-
         [Authorize]
         [HttpGet("userReservations")]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservationsForUser()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var reservs = await _resService.GetReservationsForUser(userId);
+            var reservs = await _resService.GetReservationsForUserAsync(userId);
             return Ok(reservs);
         }
 
@@ -74,9 +98,9 @@ namespace WebAPI.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
+                return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." + e.Message});
             }
         }
 

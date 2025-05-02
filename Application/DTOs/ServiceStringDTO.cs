@@ -15,13 +15,13 @@ namespace Application.DTOs
         {
             ID = s.ID;
             Count = s.Count;
+            DeliveredCount = s.DeliveredCount;
             AdditionalServiceID = s.AdditionalServiceID;
             ReservationID = s.ReservationID;
             Price = s.Price;
             ServiceStatusID = s.ServiceStatusID;
-            AdditionalService = s.AdditionalService;
-            Reservation = s.Reservation;
-            ServiceStatus = s.ServiceStatus;
+            AdditionalService = new AdditionalServiceDTO(s.AdditionalService);
+            ServiceStatus = new ServiceStatusDTO(s.ServiceStatus);
         }
         public ServiceStringDTO(ServiceStringDTO s)
         {
@@ -33,7 +33,6 @@ namespace Application.DTOs
             Price = s.Price;
             ServiceStatusID = s.ServiceStatusID;
             AdditionalService = s.AdditionalService;
-            Reservation = s.Reservation;
             ServiceStatus = s.ServiceStatus;
         }
         public int ID { get; set; }
@@ -48,9 +47,7 @@ namespace Application.DTOs
         public decimal Price { get; set; }
         public int ServiceStatusID { get; set; }
 
-        public virtual AdditionalService AdditionalService { get; set; }
-        [JsonIgnore]
-        public virtual Reservation? Reservation { get; set; }
-        public virtual ServiceStatus ServiceStatus { get; set; }
+        public virtual AdditionalServiceDTO AdditionalService { get; set; }
+        public virtual ServiceStatusDTO ServiceStatus { get; set; }
     }
 }

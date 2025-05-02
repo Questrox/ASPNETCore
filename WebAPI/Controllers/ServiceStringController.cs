@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Services;
 using Infrastructure.Migrations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -54,7 +55,23 @@ namespace WebAPI.Controllers
                 return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
             }
         }
-
+        [Authorize(Roles = "admin")]
+        [HttpPut("deliver")]
+        public async Task<ActionResult<ServiceStringDTO>> DeliverService(int serviceStringID, int amount)
+        {
+            try
+            {
+                return await _serviceStringService.DeliverServiceAsync(serviceStringID, amount);
+            } 
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
+            }
+        }
         [HttpPut("{id}")]
         public async Task<ActionResult<ServiceStringDTO>> UpdateServiceString(int id, ServiceStringDTO serviceStringDTO)
         {

@@ -17,6 +17,6 @@ namespace Application.DTOs
         public int RoomID { get; set; }
         public string UserID { get; set; }
         public int ReservationStatusID { get; set; }
-        public List<SelectedServiceItem> Services { get; set; }
+        public List<SelectedServiceItem> Services { get; set; } = new List<SelectedServiceItem>();
     }
 }

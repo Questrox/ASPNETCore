@@ -25,7 +25,7 @@ namespace Application.DTOs
             Room = reservation.Room;
             User = reservation.User;
             ReservationStatus = reservation.ReservationStatus;
-            ServiceStrings = reservation.ServiceStrings;
+            ServiceStrings = reservation.ServiceStrings.Select(s => new ServiceStringDTO(s)).ToList();
         }
 
         public int ID { get; set; }
@@ -40,6 +40,6 @@ namespace Application.DTOs
         public virtual Room Room { get; set; }
         public virtual User User { get; set; }
         public virtual ReservationStatus ReservationStatus { get; set; }
-        public virtual ICollection<ServiceString> ServiceStrings { get; set; }
+        public virtual ICollection<ServiceStringDTO> ServiceStrings { get; set; }
     }
 }
