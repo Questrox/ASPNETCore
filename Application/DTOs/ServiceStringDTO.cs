@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Application.DTOs
@@ -48,8 +49,8 @@ namespace Application.DTOs
         public int ServiceStatusID { get; set; }
 
         public virtual AdditionalService AdditionalService { get; set; }
-
-        public virtual Reservation Reservation { get; set; }
+        [JsonIgnore]
+        public virtual Reservation? Reservation { get; set; }
         public virtual ServiceStatus ServiceStatus { get; set; }
     }
 }

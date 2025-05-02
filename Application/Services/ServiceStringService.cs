@@ -13,10 +13,12 @@ namespace Application.Services
     public class ServiceStringService
     {
         private readonly IServiceStringRepository _serviceStringRepository;
+        private readonly IAdditionalServiceRepository _additionalServiceRepository;
 
-        public ServiceStringService(IServiceStringRepository serviceStringRepository)
+        public ServiceStringService(IServiceStringRepository serviceStringRepository, IAdditionalServiceRepository additionalServiceRepository)
         {
             _serviceStringRepository = serviceStringRepository;
+            _additionalServiceRepository = additionalServiceRepository;
         }
 
         public async Task<IEnumerable<ServiceStringDTO>> GetServiceStringsAsync()
@@ -34,13 +36,18 @@ namespace Application.Services
 
         public async Task<ServiceStringDTO> AddServiceStringAsync(CreateServiceStringDTO createServiceStringDTO)
         {
+            var service = await _additionalServiceRepository.GetAdditionalServiceByIdAsync(createServiceStringDTO.AdditionalServiceID);
+            if (service == null)
+                throw new ArgumentException("Не найдена доп.услуга с идентификатором " + createServiceStringDTO.AdditionalServiceID);
+            if (createServiceStringDTO.Count < 1)
+                throw new ArgumentException("Неверно указано количество услуг (Count = " + createServiceStringDTO.Count + ")");
             var s = new ServiceString
             {
                 Count = createServiceStringDTO.Count,
                 DeliveredCount = 0,
                 AdditionalServiceID = createServiceStringDTO.AdditionalServiceID,
                 ReservationID = createServiceStringDTO.ReservationID,
-                Price = createServiceStringDTO.Price,
+                Price = service.Price * createServiceStringDTO.Count,
                 ServiceStatusID = createServiceStringDTO.ServiceStatusID
             };
 

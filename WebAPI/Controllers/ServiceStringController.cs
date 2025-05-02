@@ -1,6 +1,8 @@
 ﻿using Application.DTOs;
 using Application.Services;
+using Infrastructure.Migrations;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,8 +36,23 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<ServiceStringDTO>> CreateServiceString(CreateServiceStringDTO createServiceStringDTO)
         {
-            var serviceStringDTO = await _serviceStringService.AddServiceStringAsync(createServiceStringDTO);
-            return CreatedAtAction(nameof(GetServiceString), new { id = serviceStringDTO.ID }, serviceStringDTO);
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                var serviceStringDTO = await _serviceStringService.AddServiceStringAsync(createServiceStringDTO);
+                var fullDTO = await _serviceStringService.GetServiceStringByIdAsync(serviceStringDTO.ID); //Чтобы вернулся со всеми связанными объектами
+                if (fullDTO == null)
+                    return NotFound();
+                return CreatedAtAction(nameof(GetServiceString), new { id = fullDTO.ID }, fullDTO);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
+            }
         }
 
         [HttpPut("{id}")]

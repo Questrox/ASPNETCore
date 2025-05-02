@@ -20,12 +20,14 @@ namespace Infrastructure.Repositories
 
         public async Task<ServiceString> GetServiceStringByIdAsync(int id)
         {
-            return await _db.ServiceStrings.Include(s => s.AdditionalService).Include(s => s.Reservation)
+            return await _db.ServiceStrings.Include(s => s.AdditionalService).Include(s => s.AdditionalService)
+                .Include(s => s.ServiceStatus)
                 .FirstOrDefaultAsync(s => s.ID == id);
         }
         public async Task<IEnumerable<ServiceString>> GetServiceStringsAsync()
         {
-            return await _db.ServiceStrings.Include(s => s.AdditionalService).Include(s => s.Reservation).ToListAsync();
+            return await _db.ServiceStrings.Include(s => s.AdditionalService).Include(s => s.ServiceStatus)
+                .ToListAsync();
         }
         public async Task AddServiceStringAsync(ServiceString servStr)
         {
@@ -37,7 +39,9 @@ namespace Infrastructure.Repositories
             _db.Entry(servStr).State = EntityState.Modified;
             await _db.SaveChangesAsync();
 
-            return await _db.ServiceStrings.FindAsync(servStr.ID); // Загружаем обновленный объект из БД
+            return await _db.ServiceStrings.Include(s => s.AdditionalService).Include(s => s.AdditionalService)
+                .Include(s => s.ServiceStatus)
+                .FirstOrDefaultAsync(s => s.ID == servStr.ID); // Загружаем обновленный объект из БД
         }
 
         public async Task DeleteServiceStringAsync(int id)

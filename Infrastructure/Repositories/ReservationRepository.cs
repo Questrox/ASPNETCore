@@ -24,6 +24,7 @@ namespace Infrastructure.Repositories
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
                 .Include(r => r.ReservationStatus).Include(r => r.User)
                 .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.AdditionalService)
                 .Where(r => r.UserID == userID)
                 .OrderByDescending(r => r.ArrivalDate).ToListAsync();
         }
@@ -32,6 +33,7 @@ namespace Infrastructure.Repositories
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
                 .Include(r => r.ReservationStatus).Include(r => r.User)
                 .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.AdditionalService)
                 .FirstOrDefaultAsync(r => r.ID == id);
         }
         public async Task<IEnumerable<Reservation>> GetReservationsAsync()
@@ -39,6 +41,7 @@ namespace Infrastructure.Repositories
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
                 .Include(r => r.ReservationStatus).Include(r => r.User)
                 .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.AdditionalService)
                 .ToListAsync();
         }
         public async Task AddReservationAsync(Reservation res)
@@ -54,6 +57,7 @@ namespace Infrastructure.Repositories
             return await _db.Reservations.Include(r => r.Room).ThenInclude(room => room.RoomType).ThenInclude(rt => rt.RoomCategory)
                 .Include(r => r.ReservationStatus).Include(r => r.User)
                 .Include(r => r.ServiceStrings).ThenInclude(r => r.ServiceStatus)
+                .Include(r => r.ServiceStrings).ThenInclude(r => r.AdditionalService)
                 .FirstOrDefaultAsync(r => r.ID == res.ID); // Загружаем обновленный объект из БД
         }
 
