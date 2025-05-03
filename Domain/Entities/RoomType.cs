@@ -13,6 +13,7 @@ namespace Domain.Entities
         public RoomType()
         {
             Room = new HashSet<Room>();
+            RoomTypeImages = new HashSet<RoomTypeImage>();
         }
         [Key]
         public int ID { get; set; }
@@ -29,6 +30,7 @@ namespace Domain.Entities
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [JsonIgnore]
         public virtual ICollection<Room> Room { get; set; }
+        public virtual ICollection<RoomTypeImage> RoomTypeImages { get; set; }
 
         public virtual RoomCategory RoomCategory { get; set; }
     }

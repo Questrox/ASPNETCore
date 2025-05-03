@@ -181,6 +181,28 @@ namespace Infrastructure.Migrations
                     b.ToTable("RoomTypes");
                 });
 
+            modelBuilder.Entity("Domain.Entities.RoomTypeImage", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RoomTypeID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("RoomTypeID");
+
+                    b.ToTable("RoomTypeImages");
+                });
+
             modelBuilder.Entity("Domain.Entities.ServiceStatus", b =>
                 {
                     b.Property<int>("ID")
@@ -494,6 +516,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("RoomCategory");
                 });
 
+            modelBuilder.Entity("Domain.Entities.RoomTypeImage", b =>
+                {
+                    b.HasOne("Domain.Entities.RoomType", "RoomType")
+                        .WithMany("RoomTypeImages")
+                        .HasForeignKey("RoomTypeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RoomType");
+                });
+
             modelBuilder.Entity("Domain.Entities.ServiceString", b =>
                 {
                     b.HasOne("Domain.Entities.AdditionalService", "AdditionalService")
@@ -600,6 +633,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.RoomType", b =>
                 {
                     b.Navigation("Room");
+
+                    b.Navigation("RoomTypeImages");
                 });
 
             modelBuilder.Entity("Domain.Entities.ServiceStatus", b =>

@@ -24,14 +24,24 @@ namespace WebAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            decimal price = await _resService.CalculatePriceAsync(
+            try
+            {
+                decimal price = await _resService.CalculatePriceAsync(
                 req.ArrivalDate,
                 req.DepartureDate,
                 req.RoomTypeID,
                 req.Services);
 
-            return Ok(price);
+                return Ok(price);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
+            }
         }
         [Authorize(Roles = "admin")]
         [HttpPut("confirmPayment")]

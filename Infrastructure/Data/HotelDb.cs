@@ -23,6 +23,7 @@ namespace Infrastructure.Data
         public virtual DbSet<RoomType> RoomTypes { get; set; }
         public virtual DbSet<ServiceStatus> ServiceStatuses { get; set; }
         public virtual DbSet<ServiceString> ServiceStrings { get; set; }
+        public virtual DbSet<RoomTypeImage> RoomTypeImages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -104,6 +105,13 @@ namespace Infrastructure.Data
                 .WithMany(sss => sss.ServiceString)
                 .HasForeignKey(ss => ss.ServiceStatusID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RoomTypeImage>()
+                .HasOne(rti => rti.RoomType)
+                .WithMany(rt => rt.RoomTypeImages)
+                .HasForeignKey(rti => rti.RoomTypeID)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

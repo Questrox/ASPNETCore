@@ -10,6 +10,5 @@ namespace Application.DTOs
     {
         public string FullName { get; set; }
         public string Passport { get; set; }
-        public int Discount { get; set; }
     }
 }

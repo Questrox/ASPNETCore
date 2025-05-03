@@ -12,5 +12,6 @@ namespace Domain.Interfaces
         Task<IEnumerable<RoomCategory>> GetRoomCategoriesAsync();
         Task<IEnumerable<ReservationStatus>> GetReservationStatusesAsync();
         Task<IEnumerable<ServiceStatus>> GetServiceStatusesAsync();
+        Task <IEnumerable<RoomTypeImage>> GetRoomTypeImagesAsync(int roomTypeID);
     }
 }

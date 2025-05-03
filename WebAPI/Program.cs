@@ -110,4 +110,8 @@ using (var scope = app.Services.CreateScope())
     await DbInitializer.Initialize(context, userManager, roleManager);
 }
 
+
+//Статические файлы
+app.UseStaticFiles();
+
 app.Run();

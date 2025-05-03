@@ -33,5 +33,11 @@ namespace WebAPI.Controllers
             var resStatuses = await _dicService.GetReservationStatusesAsync();
             return Ok(resStatuses);
         }
+        [HttpGet("images")]
+        public async Task<ActionResult<IEnumerable<RoomTypeImageDTO>>> GetImages(int roomTypeID)
+        {
+            var images = await _dicService.GetRoomTypeImagesAsync(roomTypeID);
+            return Ok(images);
+        }
     }
 }

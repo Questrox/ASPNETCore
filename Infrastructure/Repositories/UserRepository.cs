@@ -24,7 +24,7 @@ namespace Infrastructure.Repositories
         }
         public async Task<IEnumerable<User>> GetUsersAsync()
         {
-            return await _db.Users.Include(u => u.Reservation).ToListAsync();
+            return await _db.Users.ToListAsync();
         }
         public async Task AddUserAsync(User user)
         {

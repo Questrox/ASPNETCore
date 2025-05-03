@@ -29,5 +29,9 @@ namespace Infrastructure.Repositories
         {
             return await _db.ServiceStatuses.ToListAsync();
         }
+        public async Task<IEnumerable<RoomTypeImage>> GetRoomTypeImagesAsync(int rtID)
+        {
+            return await _db.RoomTypeImages.Where(r => r.RoomTypeID == rtID).ToListAsync();
+        }
     }
 }

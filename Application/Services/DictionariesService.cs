@@ -29,5 +29,10 @@ namespace Application.Services
             var entities = await _dicRepository.GetServiceStatusesAsync();
             return entities.Select(s => new ServiceStatusDTO(s));
         }
+        public async Task<IEnumerable<RoomTypeImageDTO>> GetRoomTypeImagesAsync(int rtID)
+        {
+            var entities = await _dicRepository.GetRoomTypeImagesAsync(rtID);
+            return entities.Select(i =>  new RoomTypeImageDTO(i));
+        }
     }
 }

@@ -20,11 +20,11 @@ namespace Infrastructure.Repositories
 
         public async Task<Room> GetRoomByIdAsync(int id)
         {
-            return await _db.Rooms.Include(r => r.Reservation).Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory).FirstOrDefaultAsync(r => r.ID == id);
+            return await _db.Rooms.Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory).FirstOrDefaultAsync(r => r.ID == id);
         }
         public async Task<IEnumerable<Room>> GetRoomsAsync()
         {
-            return await _db.Rooms.Include(u => u.Reservation).Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory).ToListAsync();
+            return await _db.Rooms.Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory).ToListAsync();
         }
         public async Task<IEnumerable<Room>> GetAvailableRoomsAsync(DateTime arrivalDate, DateTime departureDate, int roomTypeID)
         {
