@@ -12,6 +12,9 @@ using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
+    /// <summary>
+    /// Контроллер для управления пользователями в системе. Содержит методы регистрации, входа и т.п.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
@@ -25,22 +28,29 @@ namespace WebAPI.Controllers
             _signInManager = signInManager;
             _configuration = configuration;
         }
+        /// <summary>
+        /// Метод регистрации. Пытается создать пользователя на основе модели
+        /// </summary>
+        /// <param name="model">Содержит ФИО, паспортные данные, логин и пароль </param>
+        /// <returns>Статус 200 ОК или 400 Bad Request в случае ошибки</returns>
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            //var user = new User { UserName = model.UserName, Email = model.Email };
             var user = new User { UserName = model.UserName, FullName = model.FullName, Passport = model.Passport};
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                //await _userManager.AddToRoleAsync(user, model.Role);
                 await _userManager.AddToRoleAsync(user, "User");
                 return Ok(new { Message = "User registered successfully" });
             }
             return BadRequest(result.Errors);
         }
-
+        /// <summary>
+        /// Метод входа. Пытается войти в систему на основе данных модели
+        /// </summary>
+        /// <param name="model">Содержит логин и пароль</param>
+        /// <returns>Статус ОК со сгенерированным JWT-токеном, именем пользователя и ролью или же Unauthorized в случае неверных данных</returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
@@ -56,7 +66,10 @@ namespace WebAPI.Controllers
             }
             return Unauthorized();
         }
-
+        /// <summary>
+        /// Выполняет выход из системы
+        /// </summary>
+        /// <returns>Статус 200 ОК и сообщение</returns>
         [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
@@ -64,7 +77,10 @@ namespace WebAPI.Controllers
             await _signInManager.SignOutAsync();
             return Ok(new { Message = "User logged out successfully" });
         }
-
+        /// <summary>
+        /// Проверяет токен аутентификации пользователя
+        /// </summary>
+        /// <returns>Unauthorized, если пользователь не аутентифицирован, и OK с именем и ролью, если аутентифицирован</returns>
         [HttpGet("validate")]
         public async Task<IActionResult> ValidateToken()
         {
@@ -78,7 +94,11 @@ namespace WebAPI.Controllers
             return Ok(new { message = "Сессия активна", userName = usr.UserName, userRole });
 
         }
-
+        /// <summary>
+        /// Генерирует JWT-токен для пользователя
+        /// </summary>
+        /// <param name="user">Пользователь, для которого генерируется токен</param>
+        /// <returns>Сгенерированный JWT-токен</returns>
         private string GenerateJwtToken(User user)
         {
             var claims = new List<Claim>

@@ -9,6 +9,9 @@ using System.Security.Claims;
 
 namespace WebAPI.Controllers
 {
+    /// <summary>
+    /// Контроллер для работы со строками услуг
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ServiceStringController : ControllerBase
@@ -18,14 +21,21 @@ namespace WebAPI.Controllers
         {
             _serviceStringService = serviceStringService;
         }
-
+        /// <summary>
+        /// Метод для получения всех строк услуг
+        /// </summary>
+        /// <returns>Список строк</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ServiceStringDTO>>> GetServiceStrings()
         {
             var serviceStrings = await _serviceStringService.GetServiceStringsAsync();
             return Ok(serviceStrings);
         }
-
+        /// <summary>
+        /// Метод для получение строки по идентификатору
+        /// </summary>
+        /// <param name="id">Идентификатор строки</param>
+        /// <returns>Строку или NotFound, если такой нет</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceStringDTO>> GetServiceString(int id)
         {
@@ -33,7 +43,11 @@ namespace WebAPI.Controllers
             if (serviceString == null) return NotFound();
             return Ok(serviceString);
         }
-
+        /// <summary>
+        /// Метод для создания строки услуг
+        /// </summary>
+        /// <param name="createServiceStringDTO">Создаваемая строка</param>
+        /// <returns>Созданная строка или ошибка с сообщением</returns>
         [HttpPost]
         public async Task<ActionResult<ServiceStringDTO>> CreateServiceString(CreateServiceStringDTO createServiceStringDTO)
         {
@@ -55,6 +69,12 @@ namespace WebAPI.Controllers
                 return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
             }
         }
+        /// <summary>
+        /// Метод для оказания доп.услуги. Увеличивает оказанное количество на оказываемое количество
+        /// </summary>
+        /// <param name="serviceStringID">Оказываемая услуга</param>
+        /// <param name="amount">Оказываемое количество</param>
+        /// <returns>Оказанная услуга или ошибка с сообщением</returns>
         [Authorize(Roles = "admin")]
         [HttpPut("deliver")]
         public async Task<ActionResult<ServiceStringDTO>> DeliverService(int serviceStringID, int amount)
@@ -72,6 +92,12 @@ namespace WebAPI.Controllers
                 return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
             }
         }
+        /// <summary>
+        /// Метод для обновления строки услуги
+        /// </summary>
+        /// <param name="id">Идентификатор обновляемой строки</param>
+        /// <param name="serviceStringDTO">Сама строка</param>
+        /// <returns>Обновленная строка или NotFound, если не обновится</returns>
         [HttpPut("{id}")]
         public async Task<ActionResult<ServiceStringDTO>> UpdateServiceString(int id, ServiceStringDTO serviceStringDTO)
         {
@@ -85,7 +111,11 @@ namespace WebAPI.Controllers
 
             return Ok(updatedServiceString);
         }
-
+        /// <summary>
+        /// Метод для удаления строки услуг
+        /// </summary>
+        /// <param name="id">Идентификатор удаляемой строки</param>
+        /// <returns>NoContent или же ошибка с сообщением</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteServiceString(int id)
         {

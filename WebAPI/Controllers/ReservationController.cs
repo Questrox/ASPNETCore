@@ -9,6 +9,9 @@ using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
+    /// <summary>
+    /// Контроллер для работы с бронированиями
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ReservationController : ControllerBase
@@ -19,6 +22,11 @@ namespace WebAPI.Controllers
             _resService = resService;
         }
         
+        /// <summary>
+        /// Рассчитывает стоимость бронирования с учетом доп.услуг
+        /// </summary>
+        /// <param name="req">Содержит даты заезда, выезда, тип номера и список доп.услуг</param>
+        /// <returns>Цену или ошибку с сообщением</returns>
         [HttpPost("calculatePrice")]
         public async Task<ActionResult<decimal>> CalculatePrice([FromBody] CalculatePriceModel req)
         {
@@ -43,6 +51,11 @@ namespace WebAPI.Controllers
                 return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
             }
         }
+        /// <summary>
+        /// Метод для администратора, подтверждает оплату доп.услуг бронирования (уже после оплаты проживания)
+        /// </summary>
+        /// <param name="resDTO">Бронирование, для которого происходит подтверждение</param>
+        /// <returns>Обновленное бронирование</returns>
         [Authorize(Roles = "admin")]
         [HttpPut("confirmPayment")]
         public async Task<ActionResult<ReservationDTO>> ConfirmPayment(ReservationDTO resDTO)
@@ -62,6 +75,11 @@ namespace WebAPI.Controllers
                 return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." });
             }
         }
+        /// <summary>
+        /// Позволяет получить бронирования пользователя по паспорту
+        /// </summary>
+        /// <param name="passport">Паспортные данные</param>
+        /// <returns>Список бронирований пользователя</returns>
         [Authorize(Roles = "admin")]
         [HttpGet("passportReservations")]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservationsByPassport(string passport)
@@ -69,12 +87,20 @@ namespace WebAPI.Controllers
             var reservs = await _resService.GetReservationsByPassportAsync(passport);
             return Ok(reservs);
         }
+        /// <summary>
+        /// Позволяет получить все бронирования
+        /// </summary>
+        /// <returns>Список всех бронирований</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservations()
         {
             var reservs = await _resService.GetReservationsAsync();
             return Ok(reservs);
         }
+        /// <summary>
+        /// Позволяет получить бронирования пользователя, который вошел в систему
+        /// </summary>
+        /// <returns>Список бронирований текущего пользователя</returns>
         [Authorize]
         [HttpGet("userReservations")]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservationsForUser()
@@ -83,7 +109,11 @@ namespace WebAPI.Controllers
             var reservs = await _resService.GetReservationsForUserAsync(userId);
             return Ok(reservs);
         }
-
+        /// <summary>
+        /// Получает бронирование по идентификатору
+        /// </summary>
+        /// <param name="id">Идентификатор</param>
+        /// <returns>Бронирование или же NotFound</returns>
         // GET api/<ReservationController>/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ReservationDTO>> GetReservation(int id)
@@ -93,6 +123,11 @@ namespace WebAPI.Controllers
             return Ok(res);
         }
 
+        /// <summary>
+        /// Создает бронирование для текущего пользователя
+        /// </summary>
+        /// <param name="createReservationDTO">Создаваемое бронирование</param>
+        /// <returns>Созданное бронирование или ошибку с сообщением</returns>
         // POST api/<ReservationController>
         [HttpPost]
         [Authorize]
@@ -113,7 +148,12 @@ namespace WebAPI.Controllers
                 return StatusCode(500, new { message = "Произошла внутренняя ошибка сервера." + e.Message});
             }
         }
-
+        /// <summary>
+        /// Обновляет бронирование
+        /// </summary>
+        /// <param name="id">Идентификатор бронирования</param>
+        /// <param name="resDTO">Само бронирование</param>
+        /// <returns>Обновленное бронирование или ошибку</returns>
         // PUT api/<ReservationController>/5
         [HttpPut("{id}")]
         public async Task<ActionResult<ReservationDTO>> UpdateReservation(int id, ReservationDTO resDTO)
@@ -129,6 +169,11 @@ namespace WebAPI.Controllers
             return Ok(updatedRes);
         }
 
+        /// <summary>
+        /// Удаляет бронирование
+        /// </summary>
+        /// <param name="id">Идентификатор удаляемого бронирования</param>
+        /// <returns>NoContent или ошибку</returns>
         // DELETE api/<ReservationController>/5
         //[Authorize(Roles = "admin")]
         [HttpDelete("{id}")]

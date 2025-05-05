@@ -51,7 +51,7 @@ namespace Infrastructure.Repositories
             _db.Entry(room).State = EntityState.Modified;
             await _db.SaveChangesAsync();
 
-            return await _db.Rooms.Include(r => r.Reservation).Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory)
+            return await _db.Rooms.Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory)
                 .FirstOrDefaultAsync(r => r.ID == room.ID); // Загружаем обновленный объект из БД
         }
 
