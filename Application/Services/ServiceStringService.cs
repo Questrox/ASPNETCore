@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Application.Services
 {
+    /// <summary>
+    /// Сервис для управления строками дополнительных услуг
+    /// </summary>
     public class ServiceStringService
     {
         private readonly IServiceStringRepository _serviceStringRepository;
@@ -23,7 +26,14 @@ namespace Application.Services
             _additionalServiceRepository = additionalServiceRepository;
             _reservationRepository = reservationRepository;
         }
-
+        /// <summary>
+        /// Оказывает дополнительную услугу (обновляет столбец оказанных услуг).
+        /// Также проверяет корректность данных и обновляет цены связанного бронирования
+        /// </summary>
+        /// <param name="serviceStringID">Идентификатор оказываемой строки услуг</param>
+        /// <param name="amount">Количество оказываемых услуг</param>
+        /// <returns>Обновленную строку услуги</returns>
+        /// <exception cref="ArgumentException">Исключение на случай неправильности введенных данных</exception>
         public async Task<ServiceStringDTO> DeliverServiceAsync(int serviceStringID, int amount)
         {
             var servStr = await _serviceStringRepository.GetServiceStringByIdAsync(serviceStringID);
@@ -57,20 +67,32 @@ namespace Application.Services
             var result = await _serviceStringRepository.GetServiceStringByIdAsync(serviceStringID);
             return new ServiceStringDTO(result);
         }
-
+        /// <summary>
+        /// Получает список всех строк услуг
+        /// </summary>
+        /// <returns>Список всех строк услуг</returns>
         public async Task<IEnumerable<ServiceStringDTO>> GetServiceStringsAsync()
         {
             var strings = await _serviceStringRepository.GetServiceStringsAsync();
             return strings.Select(x => new ServiceStringDTO(x));
         }
-
+        /// <summary>
+        /// Получает строку услуги по идентификатору
+        /// </summary>
+        /// <param name="id">Идентификатор строки услуги</param>
+        /// <returns>Строка услуги или null, если не найдена</returns>
         public async Task<ServiceStringDTO> GetServiceStringByIdAsync(int id)
         {
             var s = await _serviceStringRepository.GetServiceStringByIdAsync(id);
             if (s == null) return null;
             return new ServiceStringDTO(s);
         }
-
+        /// <summary>
+        /// Добавляет новую строку услуги
+        /// </summary>
+        /// <param name="createServiceStringDTO">Добавляемая строка</param>
+        /// <returns>Созданная строка услуги</returns>
+        /// <exception cref="ArgumentException">Если указаны неверные параметры</exception>
         public async Task<ServiceStringDTO> AddServiceStringAsync(CreateServiceStringDTO createServiceStringDTO)
         {
             var service = await _additionalServiceRepository.GetAdditionalServiceByIdAsync(createServiceStringDTO.AdditionalServiceID);
@@ -92,6 +114,11 @@ namespace Application.Services
 
             return new ServiceStringDTO(s);
         }
+        /// <summary>
+        /// Обновляет строку услуги
+        /// </summary>
+        /// <param name="s">Обновляемая строка</param>
+        /// <returns>Обновленная строка или null, если не найдена</returns>
         public async Task<ServiceStringDTO?> UpdateServiceStringAsync(ServiceStringDTO s)
         {
             var existingString = await _serviceStringRepository.GetServiceStringByIdAsync(s.ID);
@@ -108,7 +135,10 @@ namespace Application.Services
 
             return new ServiceStringDTO(existingString); // Возвращаем обновленный объект
         }
-
+        /// <summary>
+        /// Удаляет строку услуги по идентификатору
+        /// </summary>
+        /// <param name="id">Идентификатор строки услуги</param>
         public async Task DeleteServiceStringAsync(int id)
         {
             await _serviceStringRepository.DeleteServiceStringAsync(id);

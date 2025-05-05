@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Application.Services
 {
+    /// <summary>
+    /// Сервис для бронирований
+    /// </summary>
     public class ReservationService
     {
         private readonly IReservationRepository _resRepository;
@@ -25,7 +28,12 @@ namespace Application.Services
             _roomRepository = roomRepository;
             _serviceStringRepository = serviceStringRepository;
         }
-
+        /// <summary>
+        /// Подтверждает оплату доп.услуг бронирования (меняет статус бронирования). Также изменяет статусы строк услуг, связанных с этим бронированием
+        /// </summary>
+        /// <param name="resDTO">Подтверждаемое бронирование</param>
+        /// <returns>Обновленное бронирование</returns>
+        /// <exception cref="ArgumentException">Исключения на случай неверного статуса бронирования</exception>
         public async Task<ReservationDTO> ConfirmPayment(ReservationDTO resDTO)
         {
             //Проверки
@@ -52,29 +60,52 @@ namespace Application.Services
 
             return new ReservationDTO(res);
         }
+        /// <summary>
+        /// Получает все бронирования пользователя по его паспорту
+        /// </summary>
+        /// <param name="passport">Паспортные данные пользователя</param>
+        /// <returns>Список бронирований пользователя с данным паспортом</returns>
         public async Task<IEnumerable<ReservationDTO>> GetReservationsByPassportAsync(string passport)
         {
             var reservs = await _resRepository.GetReservationsByPassportAsync(passport);
             return reservs.Select(x => new ReservationDTO(x));
         }
+        /// <summary>
+        /// Получает все бронирования пользователя по его идентификатору
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <returns>Список бронирований пользователя</returns>
         public async Task<IEnumerable<ReservationDTO>> GetReservationsForUserAsync(string userId)
         {
             var reservs = await _resRepository.GetReservationsForUserAsync(userId);
             return reservs.Select(x => new ReservationDTO(x));
         }
+        /// <summary>
+        /// Получает список всех бронирований
+        /// </summary>
+        /// <returns>Список всех бронирований</returns>
         public async Task<IEnumerable<ReservationDTO>> GetReservationsAsync()
         {
             var reservs = await _resRepository.GetReservationsAsync();
             return reservs.Select(x => new ReservationDTO(x));
         }
-
+        /// <summary>
+        /// Получает бронирование по идентификатору
+        /// </summary>
+        /// <param name="id">Идентификатор бронирования</param>
+        /// <returns>Найденное бронирование или null</returns>
         public async Task<ReservationDTO> GetReservationByIdAsync(int id)
         {
             var res = await _resRepository.GetReservationByIdAsync(id);
             if (res == null) return null;
             return new ReservationDTO(res);
         }
-
+        /// <summary>
+        /// Создает бронирование, заново рассчитывая цены, а также добавляет в БД строки доп.услуг, связанных с этим бронированием
+        /// </summary>
+        /// <param name="createReservationDTO">Создаваемое бронирование</param>
+        /// <returns>Созданное бронирование</returns>
+        /// <exception cref="ArgumentException">Исключения на случай некорректных данных</exception>
         public async Task<ReservationDTO> AddReservationAsync(CreateReservationDTO createReservationDTO)
         {
             //Проверки
@@ -128,6 +159,11 @@ namespace Application.Services
             newRes = await _resRepository.GetReservationByIdAsync(newRes.ID);
             return new ReservationDTO(newRes);
         }
+        /// <summary>
+        /// Обновляет бронирование
+        /// </summary>
+        /// <param name="resDTO">Обновляемое бронирование</param>
+        /// <returns>Обновленное бронирование</returns>
         public async Task<ReservationDTO?> UpdateReservationAsync(ReservationDTO resDTO)
         {
             var existingRes = await _resRepository.GetReservationByIdAsync(resDTO.ID);
@@ -145,12 +181,24 @@ namespace Application.Services
 
             return new ReservationDTO(existingRes); // Возвращаем обновленный объект
         }
-
+        /// <summary>
+        /// Удаляет бронирование
+        /// </summary>
+        /// <param name="id">Идентификатор удаляемого бронирования</param>
+        /// <returns></returns>
         public async Task DeleteReservationAsync(int id)
         {
             await _resRepository.DeleteReservationAsync(id);
         }
-
+        /// <summary>
+        /// Рассчитывает цену для формируемого бронирования с учетом доп.услуг
+        /// </summary>
+        /// <param name="arrival">Дата приезда</param>
+        /// <param name="departure">Дата отъезда</param>
+        /// <param name="roomTypeID">Идентификатор типа комнаты</param>
+        /// <param name="services">Выбранные доп.услуги</param>
+        /// <returns>Цену</returns>
+        /// <exception cref="ArgumentException">Неверный идентификатор типа комнаты</exception>
         public async Task<decimal> CalculatePriceAsync(DateTime arrival, DateTime departure, int roomTypeID, List<SelectedServiceItem> services)
         {
             decimal result = 0;
