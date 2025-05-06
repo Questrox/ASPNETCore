@@ -36,12 +36,14 @@ namespace Application.Services
         /// <exception cref="ArgumentException">Исключение на случай неправильности введенных данных</exception>
         public async Task<ServiceStringDTO> DeliverServiceAsync(int serviceStringID, int amount)
         {
+            //Проверки
+            if (amount <= 0)
+                throw new ArgumentException("Попытка указать количество услуг <= 0: " + amount);
             var servStr = await _serviceStringRepository.GetServiceStringByIdAsync(serviceStringID);
+            if (servStr == null)
+                throw new ArgumentException("Не существует строки услуг с идентификатором " + serviceStringID);
             var res = await _reservationRepository.GetReservationByIdAsync(servStr.ReservationID);
             var service = await _additionalServiceRepository.GetAdditionalServiceByIdAsync(servStr.AdditionalServiceID);
-            //Проверки
-            if (servStr == null) 
-                throw new ArgumentException("Не существует строки услуг с идентификатором " + serviceStringID);
             if (servStr.Count - servStr.DeliveredCount < amount)
                 throw new ArgumentException("Попытка оказать больше услуг, чем было забронировано");
             if (servStr.ServiceStatusID == 2)

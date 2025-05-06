@@ -20,20 +20,20 @@ namespace Tests.InfrastructureTests
         }
 
         [Fact]
-        public async Task AddProjectAsync_ShouldSaveProject() //Проверка на то, что User сохраняется в БД
+        public async Task AddProjectAsync_ShouldSaveUser() //Проверка на то, что User сохраняется в БД
         {
             using (var context = new HotelDb(_options))
             {
-                var project = new User { FullName = "TestName", Passport = "1234567890" };
-                context.Users.Add(project);
+                var user = new User { FullName = "TestName", Passport = "1234567890" };
+                context.Users.Add(user);
                 await context.SaveChangesAsync();
             }
 
             using (var context = new HotelDb(_options))
             {
-                var project = await context.Users.FirstOrDefaultAsync(p => p.FullName == "TestName");
-                Assert.NotNull(project);
-                Assert.Equal("1234567890", project.Passport);
+                var user = await context.Users.FirstOrDefaultAsync(p => p.FullName == "TestName");
+                Assert.NotNull(user);
+                Assert.Equal("1234567890", user.Passport);
             }
         }
     }

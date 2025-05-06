@@ -19,14 +19,16 @@ namespace Application.Services
         private readonly IRoomTypeRepository _rtRepository;
         private readonly IRoomRepository _roomRepository;
         private readonly IServiceStringRepository _serviceStringRepository;
+        private readonly IAdditionalServiceRepository _additionalServiceRepository;
 
         public ReservationService(IReservationRepository resRepository, IRoomTypeRepository rtRepository, 
-            IRoomRepository roomRepository, IServiceStringRepository serviceStringRepository)
+            IRoomRepository roomRepository, IServiceStringRepository serviceStringRepository, IAdditionalServiceRepository additionalServiceRepository)
         {
             _resRepository = resRepository;
             _rtRepository = rtRepository;
             _roomRepository = roomRepository;
             _serviceStringRepository = serviceStringRepository;
+            _additionalServiceRepository = additionalServiceRepository;
         }
         /// <summary>
         /// Подтверждает оплату доп.услуг бронирования (меняет статус бронирования). Также изменяет статусы строк услуг, связанных с этим бронированием
@@ -121,10 +123,6 @@ namespace Application.Services
             //Расчет цен
             decimal livingPrice = rt.Price * totalDays;
             decimal servicesPrice = 0;
-            //for (int i = 0; i < createReservationDTO.Services.Count; i++)
-            //{
-            //    servicesPrice += createReservationDTO.Services[i].Price * createReservationDTO.Services[i].Count;
-            //}
             decimal fullPrice = livingPrice + servicesPrice;
 
             //Добавление бронирования в БД
@@ -198,7 +196,7 @@ namespace Application.Services
         /// <param name="roomTypeID">Идентификатор типа комнаты</param>
         /// <param name="services">Выбранные доп.услуги</param>
         /// <returns>Цену</returns>
-        /// <exception cref="ArgumentException">Неверный идентификатор типа комнаты</exception>
+        /// <exception cref="ArgumentException">Неверный идентификатор типа комнаты или доп.услуга не найдена</exception>
         public async Task<decimal> CalculatePriceAsync(DateTime arrival, DateTime departure, int roomTypeID, List<SelectedServiceItem> services)
         {
             decimal result = 0;
@@ -209,10 +207,12 @@ namespace Application.Services
             result += roomType.Price * totalDays;
             for (int i = 0; i < services.Count; i++)
             {
-                result += services[i].Price * services[i].Count;
+                var service = await _additionalServiceRepository.GetAdditionalServiceByIdAsync(services[i].AdditionalServiceID);
+                if (service == null)
+                    throw new ArgumentException($"Услуга с ID {services[i].AdditionalServiceID} не найдена.");
+                result += service.Price * services[i].Count;
             }
             return result;
         }
     }
 }
-
