@@ -1,6 +1,8 @@
 ﻿using Application.DTOs;
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +31,26 @@ namespace Application.Services
         {
             var rooms = await _roomRepository.GetRoomsAsync();
             return rooms.Select(x => new RoomDTO(x));
+        }
+        /// <summary>
+        /// Получает список комнат с пагинацией
+        /// </summary>
+        /// <param name="page">Номер страницы</param>
+        /// <param name="pageSize">Количество комнат на страницу</param>
+        /// <returns>Список комнат для страницы и количество комнат</returns>
+        public async Task<PagedResult<RoomDTO>> GetPaginatedRoomsAsync(int page, int pageSize)
+        {
+            var pagedRooms = await _roomRepository.GetPaginatedRoomsAsync(page, pageSize);
+
+            var dtoItems = pagedRooms.Items
+                .Select(r => new RoomDTO(r))
+                .ToList();
+
+            return new PagedResult<RoomDTO>
+            {
+                Items = dtoItems,
+                TotalCount = pagedRooms.TotalCount
+            };
         }
         /// <summary>
         /// Получает комнату по идентификатору

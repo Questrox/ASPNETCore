@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Services;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -26,6 +27,18 @@ namespace WebAPI.Controllers
         public async Task<ActionResult<IEnumerable<RoomDTO>>> GetRooms()
         {
             var rooms = await _roomService.GetRoomsAsync();
+            return Ok(rooms);
+        }
+        /// <summary>
+        /// Метод для получения комнат с пагинацией
+        /// </summary>
+        /// <param name="page">Номер страницы</param>
+        /// <param name="pageSize">Количество комнат на странице</param>
+        /// <returns>Список комнат, который будет отображен на странице, а также общее число комнат</returns>
+        [HttpGet("pagination")]
+        public async Task<ActionResult<PagedResult<RoomDTO>>> GetPaginatedRooms([FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+        {
+            var rooms = await _roomService.GetPaginatedRoomsAsync(page, pageSize);
             return Ok(rooms);
         }
         /// <summary>

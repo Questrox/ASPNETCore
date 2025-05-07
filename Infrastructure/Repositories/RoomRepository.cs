@@ -1,7 +1,9 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs;
+using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +27,22 @@ namespace Infrastructure.Repositories
         public async Task<IEnumerable<Room>> GetRoomsAsync()
         {
             return await _db.Rooms.Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory).ToListAsync();
+        }
+        public async Task<PagedResult<Room>> GetPaginatedRoomsAsync(int page, int pageSize)
+        {
+            var query = _db.Rooms.Include(r => r.RoomType).ThenInclude(rt => rt.RoomCategory);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Room>
+            {
+                Items = items,
+                TotalCount = total
+            };
         }
         public async Task<IEnumerable<Room>> GetAvailableRoomsAsync(DateTime arrivalDate, DateTime departureDate, int roomTypeID)
         {
