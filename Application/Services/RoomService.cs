@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,12 @@ namespace Application.Services
     public class RoomService
     {
         private readonly IRoomRepository _roomRepository;
+        private readonly ILogger<RoomService> _logger;
 
-        public RoomService(IRoomRepository roomRepository)
+        public RoomService(IRoomRepository roomRepository, ILogger<RoomService> logger)
         {
             _roomRepository = roomRepository;
+            _logger = logger;
         }
         /// <summary>
         /// Получает список всех комнат
@@ -60,7 +63,11 @@ namespace Application.Services
         public async Task<RoomDTO> GetRoomByIdAsync(int id)
         {
             var room = await _roomRepository.GetRoomByIdAsync(id);
-            if (room == null) return null;
+            if (room == null)
+            {
+                _logger.LogError($"Не удалось найти комнату с идентификатором {id}");
+                return null;
+            }
             return new RoomDTO(room);
         }
         /// <summary>
@@ -100,7 +107,11 @@ namespace Application.Services
         public async Task<RoomDTO?> UpdateRoomAsync(RoomDTO roomDTO)
         {
             var existingRoom = await _roomRepository.GetRoomByIdAsync(roomDTO.ID);
-            if (existingRoom == null) return null;
+            if (existingRoom == null)
+            {
+                _logger.LogError($"Комната с id {roomDTO.ID} не найдена, обновление не выполнено");
+                return null;
+            }
 
             existingRoom.Number = roomDTO.Number;
             existingRoom.RoomTypeID = roomDTO.RoomTypeID;

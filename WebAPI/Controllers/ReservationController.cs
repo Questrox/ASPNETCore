@@ -17,9 +17,11 @@ namespace WebAPI.Controllers
     public class ReservationController : ControllerBase
     {
         private readonly ReservationService _resService;
-        public ReservationController(ReservationService resService)
+        private readonly ILogger<ReservationController> _logger;
+        public ReservationController(ReservationService resService, ILogger<ReservationController> logger)
         {
             _resService = resService;
+            _logger = logger;
         }
         
         /// <summary>
@@ -32,6 +34,9 @@ namespace WebAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} рассчитывает промежуточную цену своего бронирования (метод CalculatePrice)");
             try
             {
                 decimal price = await _resService.CalculatePriceAsync(
@@ -39,6 +44,7 @@ namespace WebAPI.Controllers
                 req.DepartureDate,
                 req.RoomTypeID,
                 req.Services);
+                _logger.LogInformation($"Расчет цены для пользователя {userId} прошел успешно, текущая цена: {price}");
 
                 return Ok(price);
             }
@@ -62,6 +68,8 @@ namespace WebAPI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} подтверждает оплату доп.услуг бронирования с идентификатором {resDTO.ID}");
             try
             {
                 return await _resService.ConfirmPayment(resDTO);
@@ -84,6 +92,8 @@ namespace WebAPI.Controllers
         [HttpGet("passportReservations")]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservationsByPassport(string passport)
         {
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} получает все бронирования пользователя с паспортом {passport}");
             var reservs = await _resService.GetReservationsByPassportAsync(passport);
             return Ok(reservs);
         }
@@ -94,6 +104,8 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservations()
         {
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} получает список всех бронирований");
             var reservs = await _resService.GetReservationsAsync();
             return Ok(reservs);
         }
@@ -105,6 +117,8 @@ namespace WebAPI.Controllers
         [HttpGet("userReservations")]
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservationsForUser()
         {
+            var userName = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} получает список всех своих бронирований");
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var reservs = await _resService.GetReservationsForUserAsync(userId);
             return Ok(reservs);
@@ -118,6 +132,8 @@ namespace WebAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ReservationDTO>> GetReservation(int id)
         {
+            var userName = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} получает бронирование по идентификатору {id}");
             var res = await _resService.GetReservationByIdAsync(id);
             if (res == null) return NotFound();
             return Ok(res);
@@ -133,6 +149,8 @@ namespace WebAPI.Controllers
         [Authorize]
         public async Task<ActionResult<ReservationDTO>> CreateReservation([FromBody] CreateReservationDTO createReservationDTO)
         {
+            var userName = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} создает бронирование");
             try
             {
                 createReservationDTO.UserID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -161,6 +179,9 @@ namespace WebAPI.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (id != resDTO.ID) return BadRequest();
 
+            var userName = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} обновляет бронирование с идентификатором {id}");
+
             var updatedRes = await _resService.UpdateReservationAsync(resDTO);
 
             if (updatedRes == null)
@@ -179,13 +200,16 @@ namespace WebAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReservation(int id)
         {
+            var userName = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} удаляет бронирование с идентификатором {id}");
             try
             {
                 await _resService.DeleteReservationAsync(id);
                 return NoContent();
             }
-            catch (ApplicationException ex)
+            catch (InvalidOperationException ex)
             {
+                _logger.LogError($"Ошибка при удалении бронирования с идентификатором {id}: {ex.Message}");
                 return Conflict(new { message = ex.Message });
             }
         }

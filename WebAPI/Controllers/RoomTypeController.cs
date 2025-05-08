@@ -14,9 +14,12 @@ namespace WebAPI.Controllers
     public class RoomTypeController : ControllerBase
     {
         private readonly RoomTypeService _roomTypeService;
-        public RoomTypeController(RoomTypeService roomTypeService)
+        private readonly ILogger<RoomTypeController> _logger;
+
+        public RoomTypeController(RoomTypeService roomTypeService, ILogger<RoomTypeController> logger)
         {
             _roomTypeService = roomTypeService;
+            _logger = logger;
         }
         /// <summary>
         /// Метод для получения списка всех типов комнат
@@ -25,6 +28,8 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RoomTypeDTO>>> GetRoomTypes()
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} получает список всех типов комнат");
             var roomTypes = await _roomTypeService.GetRoomTypesAsync();
             return Ok(roomTypes);
         }
@@ -36,6 +41,8 @@ namespace WebAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<RoomTypeDTO>> GetRoomType(int id)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} получает тип комнаты с идентификатором {id}");
             var roomType = await _roomTypeService.GetRoomTypeByIdAsync(id);
             if (roomType == null) return NotFound();
             return Ok(roomType);
@@ -48,6 +55,8 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<RoomTypeDTO>> CreateRoomType(CreateRoomTypeDTO createRoomTypeDTO)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} создает новый тип комнаты");
             var created = await _roomTypeService.AddRoomTypeAsync(createRoomTypeDTO);
             var fullDto = await _roomTypeService.GetRoomTypeByIdAsync(created.ID); //Чтобы вернулся вместе со связанными объектами
             if (fullDto == null)
@@ -66,6 +75,9 @@ namespace WebAPI.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (id != roomTypeDTO.ID) return BadRequest();
 
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} обновляет тип комнаты с идентификатором {id}");
+
             var updatedRoomType = await _roomTypeService.UpdateRoomTypeAsync(roomTypeDTO);
 
             if (updatedRoomType == null)
@@ -81,13 +93,16 @@ namespace WebAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRoomType(int id)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} удаляет тип комнаты с идентификатором {id}");
             try
             {
                 await _roomTypeService.DeleteRoomTypeAsync(id);
                 return NoContent();
             }
-            catch (ApplicationException ex)
+            catch (InvalidOperationException ex)
             {
+                _logger.LogError($"Ошибка при удалении типа комнаты с идентификатором {id}: {ex.Message}");
                 return Conflict(new { message = ex.Message });
             }
         }

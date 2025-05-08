@@ -22,11 +22,14 @@ namespace WebAPI.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
+        private readonly ILogger<AccountController> _logger;
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, 
+            IConfiguration configuration, ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _logger = logger;
         }
         /// <summary>
         /// Метод регистрации. Пытается создать пользователя на основе модели
@@ -38,12 +41,16 @@ namespace WebAPI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var user = new User { UserName = model.UserName, FullName = model.FullName, Passport = model.Passport};
+            _logger.LogInformation($"Попытка регистрации пользователя {model.UserName}");
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "User");
+                _logger.LogInformation($"Пользователь {model.UserName} успешно зарегистрирован");
                 return Ok(new { Message = "User registered successfully" });
             }
+            foreach (var error in result.Errors)
+                _logger.LogError($"Ошибка регистрации: {error.Code} {error.Description}");
             return BadRequest(result.Errors);
         }
         /// <summary>
@@ -55,6 +62,8 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Login(LoginModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            _logger.LogInformation($"Попытка входа пользователя {model.UserName}");
             var result = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, isPersistent: false, lockoutOnFailure: false);
             if (result.Succeeded)
             {
@@ -62,8 +71,10 @@ namespace WebAPI.Controllers
                 var token = GenerateJwtToken(user);
                 IList<string> roles = await _userManager.GetRolesAsync(user);
                 string userRole = roles.FirstOrDefault();
+                _logger.LogInformation($"Пользователь {model.UserName} успешно вошел в систему");
                 return Ok(new { token, userName = user.UserName, userRole });
             }
+            _logger.LogError($"Пользователю {model.UserName} не удалось выполнить вход");
             return Unauthorized();
         }
         /// <summary>
@@ -74,6 +85,8 @@ namespace WebAPI.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} выполняет выход из системы");
             await _signInManager.SignOutAsync();
             return Ok(new { Message = "User logged out successfully" });
         }
@@ -84,11 +97,14 @@ namespace WebAPI.Controllers
         [HttpGet("validate")]
         public async Task<IActionResult> ValidateToken()
         {
+            _logger.LogInformation("Происходит валидация токена");
             User usr = await _userManager.GetUserAsync(HttpContext.User);
             if (usr == null)
             {
+                _logger.LogWarning("Пользователь не аутентифицирован");
                 return Unauthorized(new { message = "Вы Гость. Пожалуйста, выполните вход" });
             }
+            _logger.LogInformation($"Сессия активна для пользователя {usr.UserName}");
             IList<string> roles = await _userManager.GetRolesAsync(usr);
             string userRole = roles.FirstOrDefault();
             return Ok(new { message = "Сессия активна", userName = usr.UserName, userRole });
@@ -101,6 +117,7 @@ namespace WebAPI.Controllers
         /// <returns>Сгенерированный JWT-токен</returns>
         private string GenerateJwtToken(User user)
         {
+            _logger.LogInformation($"Генерируется токен для пользователя {user.UserName}");
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),

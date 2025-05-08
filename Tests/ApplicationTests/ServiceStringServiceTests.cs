@@ -1,6 +1,8 @@
 ﻿using Application.Services;
+using Castle.Core.Logging;
 using Domain.Entities;
 using Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,7 @@ namespace Tests.ApplicationTests
         private readonly Mock<IServiceStringRepository> _serviceStringRepoMock = new();
         private readonly Mock<IAdditionalServiceRepository> _additionalServiceRepoMock = new();
         private readonly Mock<IReservationRepository> _reservationRepoMock = new();
+        private readonly Mock<ILogger<ServiceStringService>> _loggerMock = new();
         private readonly ServiceStringService _service;
 
         public ServiceStringServiceTests()
@@ -22,7 +25,8 @@ namespace Tests.ApplicationTests
             _service = new ServiceStringService(
                 _serviceStringRepoMock.Object,
                 _additionalServiceRepoMock.Object,
-                _reservationRepoMock.Object
+                _reservationRepoMock.Object,
+                _loggerMock.Object
             );
         }
 

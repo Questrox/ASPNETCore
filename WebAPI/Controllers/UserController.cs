@@ -15,9 +15,11 @@ namespace WebAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
-        public UserController(UserService userService)
+        private readonly ILogger<UserController> _logger;
+        public UserController(UserService userService, ILogger<UserController> logger)
         {
             _userService = userService;
+            _logger = logger;
         }
         
         /// <summary>
@@ -28,6 +30,8 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} получает список всех пользователей");
             var users = await _userService.GetUsersAsync();
             return Ok(users);
         }
@@ -40,6 +44,8 @@ namespace WebAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> GetUser(string id)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} получает пользователя по идентификатору {id}");
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null) return NotFound();
             return Ok(user);
@@ -53,6 +59,8 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<UserDTO>> CreateUser(CreateUserDTO userCreateDTO)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} создает пользователя");
             var userDTO = await _userService.AddUserAsync(userCreateDTO);
             return CreatedAtAction(nameof(GetUser), new { id = userDTO.Id }, userDTO);
         }
@@ -69,6 +77,9 @@ namespace WebAPI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (id != userDTO.Id) return BadRequest();
+
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} обновляет пользователя с идентификатором {id}");
 
             var updatedUser = await _userService.UpdateUserAsync(userDTO);
 
@@ -88,13 +99,16 @@ namespace WebAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} удаляет пользователя с идентификатором {id}");
             try
             {
                 await _userService.DeleteUserAsync(id);
                 return NoContent();
             }
-            catch (ApplicationException ex)
+            catch (InvalidOperationException ex)
             {
+                _logger.LogError($"Ошибка при удалении пользователя с идентификатором {id}: {ex.Message}");
                 return Conflict(new { message = ex.Message });
             }
         }

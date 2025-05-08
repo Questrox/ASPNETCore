@@ -71,9 +71,11 @@ namespace Infrastructure.Repositories
 
         public async Task DeleteReservationAsync(int id)
         {
-            var res = await _db.Reservations.FirstOrDefaultAsync(u => u.ID == id);
+            var res = await _db.Reservations.Include(s => s.ServiceStrings).FirstOrDefaultAsync(u => u.ID == id);
             if (res != null)
             {
+                if (res.ServiceStrings.Any())
+                    throw new InvalidOperationException("Reservation cannot be deleted because it has related service strings.");
                 _db.Reservations.Remove(res);
                 await _db.SaveChangesAsync();
             }

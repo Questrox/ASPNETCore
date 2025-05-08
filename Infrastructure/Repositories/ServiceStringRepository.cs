@@ -51,7 +51,7 @@ namespace Infrastructure.Repositories
 
         public async Task DeleteServiceStringAsync(int id)
         {
-            var servStr = await _db.ServiceStrings.Include(u => u.Reservation).FirstOrDefaultAsync(u => u.ID == id);
+            var servStr = await _db.ServiceStrings.FirstOrDefaultAsync(u => u.ID == id);
             if (servStr != null)
             {
                 _db.ServiceStrings.Remove(servStr);

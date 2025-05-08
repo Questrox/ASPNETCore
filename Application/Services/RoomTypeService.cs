@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Domain.Entities;
 using Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,10 +17,12 @@ namespace Application.Services
     public class RoomTypeService
     {
         private readonly IRoomTypeRepository _roomTypeRepository;
+        private readonly ILogger<RoomTypeService> _logger;
 
-        public RoomTypeService(IRoomTypeRepository roomTypeRepository)
+        public RoomTypeService(IRoomTypeRepository roomTypeRepository, ILogger<RoomTypeService> logger)
         {
             _roomTypeRepository = roomTypeRepository;
+            _logger = logger;
         }
         /// <summary>
         /// Получает список всех типов номеров
@@ -38,7 +41,11 @@ namespace Application.Services
         public async Task<RoomTypeDTO> GetRoomTypeByIdAsync(int id)
         {
             var rt = await _roomTypeRepository.GetRoomTypeByIdAsync(id);
-            if (rt == null) return null;
+            if (rt == null)
+            {
+                _logger.LogError($"Не удалось найти тип комнаты с идентификатором {id}");
+                return null;
+            }
             return new RoomTypeDTO(rt);
         }
         /// <summary>
@@ -68,7 +75,11 @@ namespace Application.Services
         public async Task<RoomTypeDTO?> UpdateRoomTypeAsync(RoomTypeDTO roomTypeDTO)
         {
             var existingRoomType = await _roomTypeRepository.GetRoomTypeByIdAsync(roomTypeDTO.ID);
-            if (existingRoomType == null) return null;
+            if (existingRoomType == null)
+            {
+                _logger.LogError($"Тип комнаты с id {roomTypeDTO.ID} не найден, обновление не выполнено");
+                return null;
+            }
 
             existingRoomType.GuestCapacity = roomTypeDTO.GuestCapacity;
             existingRoomType.RoomCategoryID = roomTypeDTO.RoomCategoryID;

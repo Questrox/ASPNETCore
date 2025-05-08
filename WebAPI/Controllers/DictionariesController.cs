@@ -13,9 +13,11 @@ namespace WebAPI.Controllers
     public class DictionariesController : ControllerBase
     {
         private readonly DictionariesService _dicService;
-        public DictionariesController(DictionariesService dicService)
+        private readonly ILogger<DictionariesController> _logger;
+        public DictionariesController(DictionariesService dicService, ILogger<DictionariesController> logger)
         {
             _dicService = dicService;
+            _logger = logger;
         }
         /// <summary>
         /// Метод для получения категорий комнат
@@ -24,6 +26,8 @@ namespace WebAPI.Controllers
         [HttpGet("roomCategories")]
         public async Task<ActionResult<IEnumerable<ReservationStatusDTO>>> GetRoomCategories()
         {
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} получает список всех категорий комнат");
             var roomCategories = await _dicService.GetRoomCategoriesAsync();
             return Ok(roomCategories);
         }
@@ -34,6 +38,8 @@ namespace WebAPI.Controllers
         [HttpGet("serviceStatuses")]
         public async Task<ActionResult<IEnumerable<ServiceStatusDTO>>> GetServiceStatuses()
         {
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} получает список всех статусов доп.услуг");
             var serviceStatuses = await _dicService.GetServiceStatusesAsync();
             return Ok(serviceStatuses);
         }
@@ -44,6 +50,8 @@ namespace WebAPI.Controllers
         [HttpGet("reservationStatuses")]
         public async Task<ActionResult<IEnumerable<RoomCategoryDTO>>> GetReservationStatuses()
         {
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} получает список всех статусов бронирования");
             var resStatuses = await _dicService.GetReservationStatusesAsync();
             return Ok(resStatuses);
         }
@@ -55,6 +63,8 @@ namespace WebAPI.Controllers
         [HttpGet("images")]
         public async Task<ActionResult<IEnumerable<RoomTypeImageDTO>>> GetImages(int roomTypeID)
         {
+            var userId = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userId} получает список всех изображений для номера с идентификатором {roomTypeID}");
             var images = await _dicService.GetRoomTypeImagesAsync(roomTypeID);
             return Ok(images);
         }

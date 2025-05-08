@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Domain.Entities;
 using Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,13 +19,15 @@ namespace Application.Services
         private readonly IServiceStringRepository _serviceStringRepository;
         private readonly IReservationRepository _reservationRepository;
         private readonly IAdditionalServiceRepository _additionalServiceRepository;
+        private readonly ILogger<ServiceStringService> _logger;
 
         public ServiceStringService(IServiceStringRepository serviceStringRepository, IAdditionalServiceRepository additionalServiceRepository,
-            IReservationRepository reservationRepository)
+            IReservationRepository reservationRepository, ILogger<ServiceStringService> logger)
         {
             _serviceStringRepository = serviceStringRepository;
             _additionalServiceRepository = additionalServiceRepository;
             _reservationRepository = reservationRepository;
+            _logger = logger;
         }
         /// <summary>
         /// Оказывает дополнительную услугу (обновляет столбец оказанных услуг).
@@ -38,24 +41,49 @@ namespace Application.Services
         {
             //Проверки
             if (amount <= 0)
+            {
+                _logger.LogError($"Ошибка оказания услуги: введено количество услуг <= 0 ({amount})"); 
                 throw new ArgumentException("Попытка указать количество услуг <= 0: " + amount);
+            }
             var servStr = await _serviceStringRepository.GetServiceStringByIdAsync(serviceStringID);
             if (servStr == null)
+            {
+                _logger.LogError($"Ошибка оказания услуги: строка услуг с идентификатором {serviceStringID} не найдена");
                 throw new ArgumentException("Не существует строки услуг с идентификатором " + serviceStringID);
+            }
             var res = await _reservationRepository.GetReservationByIdAsync(servStr.ReservationID);
             var service = await _additionalServiceRepository.GetAdditionalServiceByIdAsync(servStr.AdditionalServiceID);
             if (servStr.Count - servStr.DeliveredCount < amount)
+            {
+                _logger.LogError($"Ошибка оказания услуги: нельзя оказать больше услуг, чем было забронировано " +
+                    $"(забронировано {servStr.Count}, уже оказано {servStr.DeliveredCount}, попытка оказать {amount})");
                 throw new ArgumentException("Попытка оказать больше услуг, чем было забронировано");
+            }
             if (servStr.ServiceStatusID == 2)
+            {
+                _logger.LogError($"Ошибка оказания услуги: услуга {serviceStringID} уже оплачена");
                 throw new ArgumentException("Попытка оказать уже оказанную (оплаченную) услугу");
+            }
             if (servStr.ServiceStatusID == 3)
+            {
+                _logger.LogError($"Ошибка оказания услуги: услуга {serviceStringID} отменена");
                 throw new ArgumentException("Попытка оказать отмененную услугу");
+            }
             if (res.ReservationStatusID == 1)
+            {
+                _logger.LogError($"Ошибка оказания услуги: гость в бронировании с id {res.ID} еще не заехал");
                 throw new ArgumentException("Попытка оказать услугу гостю, который еще не заехал");
+            }
             if (res.ReservationStatusID == 3)
+            {
+                _logger.LogError($"Ошибка оказания услуги: гость в бронировании с id {res.ID} уже выехал");
                 throw new ArgumentException("Попытка оказать услугу гостю, который уже выехал");
+            }
             if (res.ReservationStatusID == 4)
+            {
+                _logger.LogError($"Ошибка оказания услуги: бронирование с id {res.ID} отменено");
                 throw new ArgumentException("Попытка оказать услугу в отмененном бронировании");
+            }
 
             //Обновляем столбец количества оказанных услуг
             servStr.DeliveredCount += amount;
@@ -86,7 +114,11 @@ namespace Application.Services
         public async Task<ServiceStringDTO> GetServiceStringByIdAsync(int id)
         {
             var s = await _serviceStringRepository.GetServiceStringByIdAsync(id);
-            if (s == null) return null;
+            if (s == null)
+            {
+                _logger.LogError($"Не удалось найти строку услуги с идентификатором {id}");
+                return null;
+            }
             return new ServiceStringDTO(s);
         }
         /// <summary>
@@ -99,9 +131,16 @@ namespace Application.Services
         {
             var service = await _additionalServiceRepository.GetAdditionalServiceByIdAsync(createServiceStringDTO.AdditionalServiceID);
             if (service == null)
+            {
+                _logger.LogError($"Ошибка добавления строки услуги: не найдена доп.услуга " +
+                    $"с идентификатором {createServiceStringDTO.AdditionalServiceID}");
                 throw new ArgumentException("Не найдена доп.услуга с идентификатором " + createServiceStringDTO.AdditionalServiceID);
+            }
             if (createServiceStringDTO.Count < 1)
+            {
+                _logger.LogError($"Ошибка добавления строки услуги: неверно указано количество услуг ({createServiceStringDTO.Count})");
                 throw new ArgumentException("Неверно указано количество услуг (Count = " + createServiceStringDTO.Count + ")");
+            }
             var s = new ServiceString
             {
                 Count = createServiceStringDTO.Count,
@@ -124,7 +163,11 @@ namespace Application.Services
         public async Task<ServiceStringDTO?> UpdateServiceStringAsync(ServiceStringDTO s)
         {
             var existingString = await _serviceStringRepository.GetServiceStringByIdAsync(s.ID);
-            if (existingString == null) return null;
+            if (existingString == null)
+            {
+                _logger.LogError($"Строка услуг с id {s.ID} не найден, обновление не выполнено");
+                return null;
+            } 
 
             existingString.Count = s.Count;
             existingString.DeliveredCount = s.DeliveredCount;

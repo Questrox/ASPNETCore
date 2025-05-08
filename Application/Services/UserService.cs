@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Domain.Entities;
 using Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,12 @@ namespace Application.Services
     public class UserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, ILogger<UserService> logger)
         {
             _userRepository = userRepository;
+            _logger = logger;
         }
         /// <summary>
         /// Получает список всех пользователей
@@ -37,7 +40,11 @@ namespace Application.Services
         public async Task<UserDTO> GetUserByIdAsync(string id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
-            if (user == null) return null;
+            if (user == null)
+            {
+                _logger.LogError($"Не удалось найти пользователя с идентификатором {id}");
+                return null;
+            }
             return new UserDTO(user);
         }
         /// <summary>
@@ -65,7 +72,11 @@ namespace Application.Services
         public async Task<UserDTO?> UpdateUserAsync(UserDTO userDTO)
         {
             var existingUser = await _userRepository.GetUserByIdAsync(userDTO.Id);
-            if (existingUser == null) return null;
+            if (existingUser == null)
+            {
+                _logger.LogError($"Пользователь с id {userDTO.Id} не найден, обновление не выполнено");
+                return null;
+            }
 
             existingUser.FullName = userDTO.FullName;
             existingUser.Passport = userDTO.Passport;

@@ -7,18 +7,22 @@ using System.Threading.Tasks;
 using Moq;
 using Application.Services;
 using Domain.Entities;
+using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Tests.ApplicationTests
 {
     public class UserServiceTests
     {
         private readonly Mock<IUserRepository> _mockUserRepository;
+        private readonly Mock<ILogger<UserService>> _loggerMock;
         private readonly UserService _userService;
         
         public UserServiceTests()
         {
             _mockUserRepository = new Mock<IUserRepository>();
-            _userService = new UserService(_mockUserRepository.Object);
+            _loggerMock = new Mock<ILogger<UserService>>();
+            _userService = new UserService(_mockUserRepository.Object, _loggerMock.Object);
         }
 
         [Fact]

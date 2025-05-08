@@ -8,6 +8,7 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Models;
 using Application.DTOs;
+using Microsoft.Extensions.Logging;
 
 namespace Tests.ApplicationTests
 {
@@ -18,6 +19,7 @@ namespace Tests.ApplicationTests
         private readonly Mock<IRoomRepository> _roomRepoMock = new();
         private readonly Mock<IServiceStringRepository> _serviceStringRepoMock = new();
         private readonly Mock<IAdditionalServiceRepository> _addServiceRepoMock = new();
+        private readonly Mock<ILogger<ReservationService>> _loggerMock = new();
 
         private readonly ReservationService _service;
 
@@ -28,7 +30,8 @@ namespace Tests.ApplicationTests
                 _roomTypeRepoMock.Object,
                 _roomRepoMock.Object,
                 _serviceStringRepoMock.Object,
-                _addServiceRepoMock.Object
+                _addServiceRepoMock.Object,
+                _loggerMock.Object
             );
         }
 
@@ -183,7 +186,7 @@ namespace Tests.ApplicationTests
         }
 
         [Theory]
-        [InlineData(1, "Попытка подтвердить оплату услуг у бронирования, у которого еще не оплачено ожидание")]
+        [InlineData(1, "Попытка подтвердить оплату услуг у бронирования, у которого еще не оплачено проживание")]
         [InlineData(3, "Попытка подтвердить оплату услуг у уже оплаченного бронирования")]
         [InlineData(4, "Попытка подтвердить оплату услуг у отмененного бронирования")]
         public async Task ConfirmPayment_InvalidStatus_ThrowsArgumentException(int statusId, string expectedMessage) //Проверяет выброс исключений

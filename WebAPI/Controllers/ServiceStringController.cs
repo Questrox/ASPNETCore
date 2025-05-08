@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Services;
+using Domain.Entities;
 using Infrastructure.Migrations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,9 +18,11 @@ namespace WebAPI.Controllers
     public class ServiceStringController : ControllerBase
     {
         private readonly ServiceStringService _serviceStringService;
-        public ServiceStringController(ServiceStringService serviceStringService)
+        private readonly ILogger<ServiceStringController> _logger;
+        public ServiceStringController(ServiceStringService serviceStringService, ILogger<ServiceStringController> logger)
         {
             _serviceStringService = serviceStringService;
+            _logger = logger;
         }
         /// <summary>
         /// Метод для получения всех строк услуг
@@ -28,6 +31,8 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ServiceStringDTO>>> GetServiceStrings()
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} получает список всех строк услуг");
             var serviceStrings = await _serviceStringService.GetServiceStringsAsync();
             return Ok(serviceStrings);
         }
@@ -39,6 +44,8 @@ namespace WebAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceStringDTO>> GetServiceString(int id)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} получает строку услуги по идентификатору {id}");
             var serviceString = await _serviceStringService.GetServiceStringByIdAsync(id);
             if (serviceString == null) return NotFound();
             return Ok(serviceString);
@@ -51,6 +58,8 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<ServiceStringDTO>> CreateServiceString(CreateServiceStringDTO createServiceStringDTO)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} создает строку услуги");
             try
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -79,6 +88,9 @@ namespace WebAPI.Controllers
         [HttpPut("deliver")]
         public async Task<ActionResult<ServiceStringDTO>> DeliverService(int serviceStringID, int amount)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} оказывает строку услуги по идентификатору {serviceStringID} " +
+                $"в количестве {amount}");
             try
             {
                 return await _serviceStringService.DeliverServiceAsync(serviceStringID, amount);
@@ -104,6 +116,9 @@ namespace WebAPI.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (id != serviceStringDTO.ID) return BadRequest();
 
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} обновляет строку услуги с идентификатором {id}");
+
             var updatedServiceString = await _serviceStringService.UpdateServiceStringAsync(serviceStringDTO);
 
             if (updatedServiceString == null)
@@ -119,13 +134,16 @@ namespace WebAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteServiceString(int id)
         {
+            var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Гость";
+            _logger.LogInformation($"Пользователь {userName} удаляет строку услуги с идентификатором {id}");
             try
             {
                 await _serviceStringService.DeleteServiceStringAsync(id);
                 return NoContent();
             }
-            catch (ApplicationException ex)
+            catch (InvalidOperationException ex)
             {
+                _logger.LogError($"Ошибка при удалении строки услуги с идентификатором {id}: {ex.Message}");
                 return Conflict(new { message = ex.Message });
             }
         }

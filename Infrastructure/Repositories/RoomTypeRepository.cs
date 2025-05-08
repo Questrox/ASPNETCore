@@ -42,11 +42,13 @@ namespace Infrastructure.Repositories
 
         public async Task DeleteRoomTypeAsync(int id)
         {
-            var rt = await _db.RoomTypes.Include(r => r.Room).FirstOrDefaultAsync(r => r.ID == id);
+            var rt = await _db.RoomTypes.Include(r => r.Room).Include(r => r.RoomTypeImages).FirstOrDefaultAsync(r => r.ID == id);
             if (rt != null)
             {
                 if (rt.Room.Any())
                     throw new InvalidOperationException("Room type cannot be deleted because it has related rooms.");
+                if (rt.RoomTypeImages.Any())
+                    throw new InvalidOperationException("Room type cannot be deleted because it has related images.");
                 _db.RoomTypes.Remove(rt);
                 await _db.SaveChangesAsync();
             }

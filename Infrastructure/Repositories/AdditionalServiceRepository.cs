@@ -44,9 +44,11 @@ namespace Infrastructure.Repositories
 
         public async Task DeleteAdditionalServiceAsync(int id)
         {
-            var service = await _db.AdditionalServices.FirstOrDefaultAsync(s => s.ID == id);
+            var service = await _db.AdditionalServices.Include(s => s.ServiceString).FirstOrDefaultAsync(s => s.ID == id);
             if (service != null)
             {
+                if (service.ServiceString.Any())
+                    throw new InvalidOperationException("Service cannot be deleted because it has related service strings");
                 _db.AdditionalServices.Remove(service);
                 await _db.SaveChangesAsync();
             }

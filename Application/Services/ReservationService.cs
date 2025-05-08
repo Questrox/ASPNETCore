@@ -2,6 +2,7 @@
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,15 +21,18 @@ namespace Application.Services
         private readonly IRoomRepository _roomRepository;
         private readonly IServiceStringRepository _serviceStringRepository;
         private readonly IAdditionalServiceRepository _additionalServiceRepository;
+        private readonly ILogger<ReservationService> _logger;
 
         public ReservationService(IReservationRepository resRepository, IRoomTypeRepository rtRepository, 
-            IRoomRepository roomRepository, IServiceStringRepository serviceStringRepository, IAdditionalServiceRepository additionalServiceRepository)
+            IRoomRepository roomRepository, IServiceStringRepository serviceStringRepository,
+            IAdditionalServiceRepository additionalServiceRepository, ILogger<ReservationService> logger)
         {
             _resRepository = resRepository;
             _rtRepository = rtRepository;
             _roomRepository = roomRepository;
             _serviceStringRepository = serviceStringRepository;
             _additionalServiceRepository = additionalServiceRepository;
+            _logger = logger;
         }
         /// <summary>
         /// Подтверждает оплату доп.услуг бронирования (меняет статус бронирования). Также изменяет статусы строк услуг, связанных с этим бронированием
@@ -40,11 +44,23 @@ namespace Application.Services
         {
             //Проверки
             if (resDTO.ReservationStatusID == 1)
-                throw new ArgumentException("Попытка подтвердить оплату услуг у бронирования, у которого еще не оплачено ожидание");
+            {
+                _logger.LogError($"Ошибка при подтверждении оплаты доп.услуг у бронирования с id {resDTO.ID}:" +
+                    $" у бронирования еще не оплачено проживание");
+                throw new ArgumentException("Попытка подтвердить оплату услуг у бронирования, у которого еще не оплачено проживание");
+            }
             if (resDTO.ReservationStatusID == 3)
+            {
+                _logger.LogError($"Ошибка при подтверждении оплаты доп.услуг у бронирования с id {resDTO.ID}:" +
+                    $" бронирование уже оплачено");
                 throw new ArgumentException("Попытка подтвердить оплату услуг у уже оплаченного бронирования");
+            }
             if (resDTO.ReservationStatusID == 4)
+            {
+                _logger.LogError($"Ошибка при подтверждении оплаты доп.услуг у бронирования с id {resDTO.ID}:" +
+                    $" бронирование отменено");
                 throw new ArgumentException("Попытка подтвердить оплату услуг у отмененного бронирования");
+            }
             
             //Меняем статусы услуг
             var res = await _resRepository.GetReservationByIdAsync(resDTO.ID);
@@ -99,7 +115,11 @@ namespace Application.Services
         public async Task<ReservationDTO> GetReservationByIdAsync(int id)
         {
             var res = await _resRepository.GetReservationByIdAsync(id);
-            if (res == null) return null;
+            if (res == null)
+            {
+                _logger.LogError($"Не удалось найти бронирование с идентификатором {id}");
+                return null;
+            }
             return new ReservationDTO(res);
         }
         /// <summary>
@@ -112,12 +132,20 @@ namespace Application.Services
         {
             //Проверки
             if (createReservationDTO.ArrivalDate >= createReservationDTO.DepartureDate)
+            {
+                _logger.LogError($"Ошибка при создании бронирования: дата выезда ({createReservationDTO.ArrivalDate:dd-MM-yyyy})" +
+                    $" должна быть позже даты заезда ({createReservationDTO.DepartureDate:dd-MM-yyyy})");
                 throw new ArgumentException("Дата выезда должна быть позже даты заезда.");
+            }
             int totalDays = (int)(createReservationDTO.DepartureDate - createReservationDTO.ArrivalDate).TotalDays;
             Room r = await _roomRepository.GetRoomByIdAsync(createReservationDTO.RoomID);
             var availableRooms = await _roomRepository.GetAvailableRoomsAsync(createReservationDTO.ArrivalDate, createReservationDTO.DepartureDate, r.RoomTypeID);
             if (!availableRooms.Any(x => x.ID == r.ID))
+            {
+                _logger.LogError($"Ошибка при создании бронирования: комната {r.Number} не является свободной в период " +
+                    $"с {createReservationDTO.ArrivalDate:dd-MM-yyyy} по {createReservationDTO.DepartureDate:dd-MM-yyyy}");
                 throw new ArgumentException("Данная комната не является свободной в данный период");
+            }
             RoomType rt = await _rtRepository.GetRoomTypeByIdAsync(r.RoomTypeID);
 
             //Расчет цен
@@ -165,7 +193,11 @@ namespace Application.Services
         public async Task<ReservationDTO?> UpdateReservationAsync(ReservationDTO resDTO)
         {
             var existingRes = await _resRepository.GetReservationByIdAsync(resDTO.ID);
-            if (existingRes == null) return null;
+            if (existingRes == null)
+            {
+                _logger.LogError($"Бронирования с id {resDTO.ID} не найдено, обновление не выполнено");
+                return null;
+            }
 
             existingRes.ArrivalDate = resDTO.ArrivalDate;
             existingRes.DepartureDate = resDTO.DepartureDate;
@@ -203,13 +235,20 @@ namespace Application.Services
             int totalDays = (int)(departure - arrival).TotalDays;
             RoomType roomType = await _rtRepository.GetRoomTypeByIdAsync(roomTypeID);
             if (roomType == null)
+            {
+                _logger.LogError($"Расчет цены не выполнен: не удалось найти тип комнаты с идентификатором {roomTypeID}");
                 throw new ArgumentException("Неверный ID типа комнаты.");
+            }
             result += roomType.Price * totalDays;
             for (int i = 0; i < services.Count; i++)
             {
                 var service = await _additionalServiceRepository.GetAdditionalServiceByIdAsync(services[i].AdditionalServiceID);
                 if (service == null)
+                {
+                    _logger.LogError($"Расчет цены не выполнен: не удалось найти доп.услугу " +
+                        $"с идентификатором {services[i].AdditionalServiceID}");
                     throw new ArgumentException($"Услуга с ID {services[i].AdditionalServiceID} не найдена.");
+                }
                 result += service.Price * services[i].Count;
             }
             return result;

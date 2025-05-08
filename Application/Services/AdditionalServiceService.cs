@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Domain.Entities;
 using Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,12 @@ namespace Application.Services
     public class AdditionalServiceService
     {
         private readonly IAdditionalServiceRepository _serviceRepository;
+        private readonly ILogger<AdditionalServiceService> _logger;
 
-        public AdditionalServiceService(IAdditionalServiceRepository serviceRepository)
+        public AdditionalServiceService(IAdditionalServiceRepository serviceRepository, ILogger<AdditionalServiceService> logger)
         {
             _serviceRepository = serviceRepository;
+            _logger = logger;
         }
         /// <summary>
         /// Получает список дополнительных услуг
@@ -37,7 +40,11 @@ namespace Application.Services
         public async Task<AdditionalServiceDTO> GetAdditionalServiceByIdAsync(int id)
         {
             var service = await _serviceRepository.GetAdditionalServiceByIdAsync(id);
-            if (service == null) return null;
+            if (service == null)
+            {
+                _logger.LogError($"Не удалось найти доп.услугу с идентификатором {id}");
+                return null;
+            }
             return new AdditionalServiceDTO(service);
         }
         /// <summary>
@@ -64,8 +71,13 @@ namespace Application.Services
         /// <returns>Обновленная услуга</returns>
         public async Task<AdditionalServiceDTO> UpdateAdditionalServiceAsync(AdditionalServiceDTO serviceDTO)
         {
+            _logger.LogInformation($"Пользователь обновляет доп.услугу с идентификатором {serviceDTO.ID}");
             var existingService = await _serviceRepository.GetAdditionalServiceByIdAsync(serviceDTO.ID);
-            if (existingService == null) return null;
+            if (existingService == null)
+            {
+                _logger.LogError($"Доп.услуги с идентификатором {serviceDTO.ID} не найдено, обновление не выполнено");
+                return null;
+            }
 
             existingService.Name = serviceDTO.Name;
             existingService.Price = serviceDTO.Price;
